@@ -14,12 +14,17 @@ namespace Harmonify
         public List<Measure> measures = new List<Measure>();
         public List<Note> notes = new List<Note>();
         private enum eNoteName { C, Csharp, D, Dsharp, E, F, Fsharp, G, Gsharp, A, Asharp, B };
-        private int keyAsMajor = 0;
         private int targetTrackIndex = 0;
         private IuiHandler iuiHandler;
+        public List<Section> sections = new List<Section>();
 
         public Song(string path, IuiHandler _iuiHandler)
         {
+            if (string.IsNullOrEmpty(path))
+            {
+                MidiFile = null;
+                return;
+            }
             iuiHandler = _iuiHandler;
             MidiFile = new MidiParser.MidiFile(path);
             Bpm = 0;
@@ -49,7 +54,120 @@ namespace Harmonify
                     }
                 }
             }
-            Analyze();
+        }
+        public void Analyze()
+        {
+            targetTrackIndex = GetTargetTrackIndex();
+            if(targetTrackIndex != -1)
+            {
+                MakeNotes();
+                MakeMeasures();
+                MakeSection();
+                Chordify();
+                // Analyze Song forms
+                // incomplete bar check
+            }
+
+        }
+
+        private void AssumeKey()
+        {
+            
+        }
+        private void Chordify()
+        {
+            for(int i = 0; i < sections.Count; i++)
+            {
+                if (sections[i].measures[0].notes.Count > 0)
+                {
+                    for(int j = 0; j < sections[i].measures.Count; j++)
+                    {
+                        Chord chord = new Chord();
+                        List<int> mostweightedNotes = GetMostWeightedNotes(sections[i].measures[j]);
+                        int matchestRoot = 0;
+                        int matchestMatch = 0;
+                        int currentMatch = 0;
+                        for(int k = 0; k < 12; k++)
+                        {
+                            currentMatch = 0;
+                            for(int m = 0; m < mostweightedNotes.Count; m++)
+                            {
+                                List<int> chordNotes = KeySignature.GetDiatonicChordNotes(0, true, k);
+                                if(chordNotes != null && chordNotes.Count > 1)
+                                {
+                                    currentMatch += Chord.Match(mostweightedNotes[m], chordNotes);
+                                }
+                            }
+                            // 현재 거가 더 잘맞으면
+                            if(currentMatch > matchestMatch)
+                            {
+                                matchestRoot = k;
+                                matchestMatch = currentMatch;
+                            }
+                        }
+                        chord.root = matchestRoot;
+                        chord.major = true;
+                        sections[i].measures[j].chords.Add(chord);
+                    }
+                }
+            }
+        }
+
+        private List<int> GetMostWeightedNotes(Measure measure)
+        {
+            List<Tuple<int, int>> weightedNotes = new List<Tuple<int, int>>();
+            int[] weights = new int[12];
+            for(int i= 0; i < measure.notes.Count; i++)
+            {
+                weights[measure.notes[i].noteNumber % 12] += measure.notes[i].length;
+            }
+            for(int i = 0; i < weights.Length; i++)
+            {
+                if(weights[i] > 0)
+                {
+                    weightedNotes.Add(new Tuple<int, int>(i, weights[i]));
+                }
+            }
+            weightedNotes.Sort((a, b) => b.Item2.CompareTo(a.Item2));
+            if(weightedNotes.Count > 3)
+            {
+                while(weightedNotes.Count < 4)
+                {
+                    weightedNotes.RemoveAt(weightedNotes.Count - 1);
+                }
+            }
+            List<int> frequentNotes = new List<int>();
+            for(int i = 0; i < weightedNotes.Count; i++)
+            {
+                frequentNotes.Add(weightedNotes[i].Item1);
+            }
+            return frequentNotes;
+        }
+
+        private void MakeSection()
+        {
+            int sectionIndex = 0;
+            Section currentSection = new Section();
+            currentSection.sectionName = "0";
+            currentSection.measures.Add(measures[0]);
+            sections.Add(currentSection);
+            for(int i = 1; i < measures.Count; i++)
+            {
+                // 한쪽은 음표가 없는데 한쪽은 음표가 없다.
+                if(NoteExistenceDifferent(measures[i], measures[i - 1]))
+                {
+                    sectionIndex++;
+                    currentSection = new Section();
+                    currentSection.sectionName = sectionIndex.ToString();
+                    sections.Add(currentSection);
+                }
+                currentSection.measures.Add(measures[i]);
+            }
+        }
+
+        private bool NoteExistenceDifferent(Measure a, Measure b)
+        {
+            return (a.notes.Count > 0 && b.notes.Count == 0) || (a.notes.Count == 0 && b.notes.Count > 0);
         }
 
         private bool AllTimeSet()
@@ -61,33 +179,59 @@ namespace Harmonify
             return false;
         }
 
-        public void Analyze()
-        {
-            GetTargetTrackIndex();
-            //MakeNotes();
-           // MakeMeasures(); 
-            // Analyze Song forms
-            // incomplete bar check
 
-        }
-
-        private void GetTargetTrackIndex()
+        private int GetTargetTrackIndex()
         {
-            string[] trackNames = new string[MidiFile.Tracks.Length];
-            for(int i = 0; i < MidiFile.Tracks.Length; i++)
+            List<Tuple<int, string>> trackTuples = new List<Tuple<int, string>>();
+            // 트랙 중
+            for (int i = 0; i < MidiFile.Tracks.Length; i++)
             {
-                for(int j = 0;j < MidiFile.Tracks[i].TextEvents.Count; j++)
+                // 그 트랙의 미디이벤트 중
+                for(int j = 0; j < MidiFile.Tracks[i].MidiEvents.Count; j++)
                 {
-                    if (MidiFile.Tracks[i].TextEvents[j].TextEventType.Equals(MidiParser.TextEventType.TrackName))
+                    // 노트 온이 있으면
+                    if (MidiFile.Tracks[i].MidiEvents[j].MidiEventType.Equals(MidiParser.MidiEventType.NoteOn))
                     {
-                        trackNames[i] = MidiFile.Tracks[i].TextEvents[j].Value + " | ";
+                        trackTuples.Add(new Tuple<int, string>(i, FindTrackName(MidiFile.Tracks[i])));
                         break;
                     }
                 }
             }
-            iuiHandler.GetTrackIndex(trackNames);
+            if(trackTuples.Count == 1)
+            {
+                return trackTuples[0].Item1;
+            }
+            else if(trackTuples.Count == 0)
+            {
+                MessageBox.Show("적절한 트랙이 없음");
+                return -1;
+            }
+            else
+            {
+                List<string> trackNames = new List<string>();
+                for(int i = 0; i < trackTuples.Count; i++)
+                {
+                    trackNames.Add(trackTuples[i].Item2);
+                }
+                return iuiHandler.GetTrackIndex(trackNames);
+            }
         }
 
+        private string FindTrackName(MidiParser.MidiTrack midiTrack)
+        {
+            for(int i = 0; i < midiTrack.TextEvents.Count; i++)
+            {
+                if (midiTrack.TextEvents[i].TextEventType.Equals(MidiParser.TextEventType.TrackName))
+                {
+                    return midiTrack.TextEvents[i].Value;
+                }
+                else if (midiTrack.TextEvents[i].TextEventType.Equals(MidiParser.TextEventType.Text))
+                {
+                    return midiTrack.TextEvents[i].Value;
+                }
+            }
+            return midiTrack.ToString();
+        }
         public static string GetNoteName(int noteNumber)
         {
             return ((eNoteName)((noteNumber) % 12)).ToString();
@@ -102,30 +246,20 @@ namespace Harmonify
         private void MakeNotes()
         {
             notes.Clear();
-            if (MidiFile == null)
+            MidiParser.MidiTrack midiTrack = MidiFile.Tracks[targetTrackIndex];
+            for (int j = 0; j < midiTrack.MidiEvents.Count; j++)
             {
-                MessageBox.Show("미디파일이 없습니다.");
-            }
-            for (int i = 0; i < MidiFile.TracksCount; i++)
-            {
-                if (MidiFile.Tracks[i].MidiEvents.Count > 0)
+                // NoteOn일 경우
+                if (midiTrack.MidiEvents[j].MidiEventType == MidiParser.MidiEventType.NoteOn)
                 {
-                    for (int j = 0; j < MidiFile.Tracks[i].MidiEvents.Count; j++)
+                    for (int k = j; k < midiTrack.MidiEvents.Count; k++)
                     {
-                        // NoteOn일 경우
-                        if (MidiFile.Tracks[i].MidiEvents[j].MidiEventType == MidiParser.MidiEventType.NoteOn)
+                        if (midiTrack.MidiEvents[k].MidiEventType == MidiParser.MidiEventType.NoteOff && midiTrack.MidiEvents[k].Note == midiTrack.MidiEvents[j].Note)
                         {
-                            for (int k = j; k < MidiFile.Tracks[i].MidiEvents.Count; k++)
-                            {
-                                if (MidiFile.Tracks[i].MidiEvents[k].MidiEventType == MidiParser.MidiEventType.NoteOff && MidiFile.Tracks[i].MidiEvents[k].Note == MidiFile.Tracks[i].MidiEvents[j].Note)
-                                {
-                                    notes.Add(new Note(MidiFile.Tracks[i].MidiEvents[j].Note, MidiFile.Tracks[i].MidiEvents[j].Time, MidiFile.Tracks[i].MidiEvents[k].Time));
-                                    break;
-                                }
-                            }
+                            notes.Add(new Note(midiTrack.MidiEvents[j].Note, midiTrack.MidiEvents[j].Time, midiTrack.MidiEvents[k].Time));
+                            break;
                         }
                     }
-                    //break;
                 }
             }
 
@@ -133,9 +267,14 @@ namespace Harmonify
 
         private void MakeMeasures()
         {
-            int lastOfftime = notes[notes.Count - 1].offTime;
+            if(notes.Count < 1)
+            {
+                MessageBox.Show("There is no note in the track.");
+                return;
+            }
+            int lastOfftime = notes[^1].offTime;
             int numberOfMeasures = GetMeasureIndex(lastOfftime) + (IsFirstBeat(lastOfftime) ? 0 : 1);
-            for(int i = 0; i < numberOfMeasures; i++)
+            for (int i = 0; i < numberOfMeasures; i++)
             {
                 measures.Add(new Measure(i));
             }
@@ -157,7 +296,7 @@ namespace Harmonify
                     measures[onMeasureIndex].notes.Add(notes[i]);
                 }
             }
-            for(int i = 0; i < measures.Count; i++)
+            for (int i = 0; i < measures.Count; i++)
             {
                 measures[i].TrimNotes();
             }

@@ -6,6 +6,6 @@ namespace Harmonify
 {
     public interface IuiHandler
     {
-        public void GetTrackIndex(string[] trackNames);
+        public int GetTrackIndex(List<string> trackNames);
     }
 }

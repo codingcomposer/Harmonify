@@ -10,23 +10,32 @@ namespace Harmonify
 {
     public partial class SelectTrackForm : Form
     {
-        Harmonify harmonify;
-        public SelectTrackForm()
+        public int selectedIndex;
+        MainForm mainForm;
+        public SelectTrackForm(List<string> trackNames, MainForm _mainForm)
         {
             InitializeComponent();
+            mainForm = _mainForm;
+            comboBox1.Items.AddRange(trackNames.ToArray());
         }
-
-        public void SetComboBox(string[] trackNames, Harmonify _harmonify)
-        {
-            harmonify = _harmonify;
-            comboBox1.Items.AddRange(trackNames);
-            comboBox1.SelectedIndex = 0;
-            MessageBox.Show("here");
-        }
-
         private void button1_Click(object sender, EventArgs e)
         {
-            harmonify.SetTrackIndex(comboBox1.SelectedIndex);
+            Close();
+        }
+
+        private void comboBox1_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            selectedIndex = comboBox1.SelectedIndex;
+        }
+
+        private void label1_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void SelectTrackForm_Load(object sender, EventArgs e)
+        {
+
         }
     }
 }

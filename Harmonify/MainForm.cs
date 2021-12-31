@@ -3,47 +3,46 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
 using System.Drawing;
-using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace Harmonify
 {
-    public partial class Harmonify : Form, IuiHandler
+    public partial class MainForm : Form, IuiHandler
     {
         public Song song;
         public string midiFilePath;
-        public Harmonify()
+        public MainForm()
         {
             InitializeComponent();
-        }
-
-        private void Harmonify_Load(object sender, EventArgs e)
-        {
-
         }
 
         private void ImportFileButton_Click(object sender, EventArgs e)
         {
             midiFilePath = ShowFileOpenDialog();
-            if(midiFilePath != null)
+            if (midiFilePath != null)
             {
                 song = new Song(midiFilePath, this);
+                if (Song.MidiFile != null)
+                {
+                    song.Analyze();
+                }
+                textBox1.Text = null;
                 textBox1.Text += "BPM: " + Song.Bpm + "\r\n";
                 textBox1.Text += "Time Signature : " + Song.TimeSigTop + "/" + Song.TimeSigBottom + "\r\n";
-                for(int i = 0; i < song.notes.Count; i++)
-                {
-                    textBox1.Text += song.notes[i].noteName + ((float)song.notes[i].onTime / Song.MidiFile.TicksPerQuarterNote) + "|";
-                }
                 textBox1.Text += "\r\n";
-                for(int i = 0; i < song.measures.Count; i++)
+                for(int i = 0; i < song.sections.Count; i++)
                 {
-                    for(int j = 0; j < song.measures[i].notes.Count; j++)
+                    textBox1.Text += "\r\n" + i.ToString() + ":";
+                    for(int j = 0; j < song.sections[i].measures.Count; j++)
                     {
-                        textBox1.Text += song.measures[i].notes[j].noteName;
+                        for(int k = 0; k < song.sections[i].measures[j].chords.Count; k++)
+                        {
+                            
+                            textBox1.Text += Song.GetNoteName(song.sections[i].measures[j].chords[k].root);
+                        }
+                        textBox1.Text += "|";
                     }
-                    textBox1.Text += "|";
                 }
             }
             else
@@ -55,7 +54,7 @@ namespace Harmonify
         {
             //파일오픈창 생성 및 설정
             OpenFileDialog ofd = new OpenFileDialog();
-            ofd.Title = "분석할 미디파일을 선택하세요"; 
+            ofd.Title = "분석할 미디파일을 선택하세요";
             ofd.Filter = "미디 파일 (*.mid) | *.mid;";
 
             //파일 오픈창 로드
@@ -85,20 +84,15 @@ namespace Harmonify
             return "";
         }
 
-        public void GetTrackIndex(string[] trackNames)
+        public int GetTrackIndex(List<string> trackNames)
         {
-            SelectTrackForm popup = new SelectTrackForm();
-            DialogResult dialogresult = popup.ShowDialog();
-            popup.SetComboBox(trackNames, this); 
-            if (dialogresult == DialogResult.OK)
+            SelectTrackForm popup = new SelectTrackForm(trackNames, this);
+            DialogResult dr = popup.ShowDialog();
+            if(dr == DialogResult.Cancel)
             {
-                MessageBox.Show("You clicked OK");
+                return popup.selectedIndex;
             }
-            else if (dialogresult == DialogResult.Cancel)
-            {
-                MessageBox.Show("You clicked either Cancel or X button in the top right corner");
-            }
-            popup.Dispose();
+            return 0;
         }
 
         public void SetTrackIndex(int index)

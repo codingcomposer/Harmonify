@@ -8,6 +8,7 @@ namespace Harmonify
     {
         public int index;
         public List<Note> notes = new List<Note>();
+        public List<Chord> chords = new List<Chord>();
 
         public Measure(int _index)
         {
