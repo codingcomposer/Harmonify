@@ -1,0 +1,17 @@
+C:\Users\Overclock-1\source\repos\Harmonify\Harmonify\bin\Debug\netcoreapp3.1\Harmonify.exe
+C:\Users\Overclock-1\source\repos\Harmonify\Harmonify\bin\Debug\netcoreapp3.1\Harmonify.deps.json
+C:\Users\Overclock-1\source\repos\Harmonify\Harmonify\bin\Debug\netcoreapp3.1\Harmonify.runtimeconfig.json
+C:\Users\Overclock-1\source\repos\Harmonify\Harmonify\bin\Debug\netcoreapp3.1\Harmonify.runtimeconfig.dev.json
+C:\Users\Overclock-1\source\repos\Harmonify\Harmonify\bin\Debug\netcoreapp3.1\Harmonify.dll
+C:\Users\Overclock-1\source\repos\Harmonify\Harmonify\bin\Debug\netcoreapp3.1\Harmonify.pdb
+C:\Users\Overclock-1\source\repos\Harmonify\Harmonify\obj\Debug\netcoreapp3.1\Harmonify.csproj.AssemblyReference.cache
+C:\Users\Overclock-1\source\repos\Harmonify\Harmonify\obj\Debug\netcoreapp3.1\Harmonify.Harmonify.resources
+C:\Users\Overclock-1\source\repos\Harmonify\Harmonify\obj\Debug\netcoreapp3.1\Harmonify.csproj.GenerateResource.cache
+C:\Users\Overclock-1\source\repos\Harmonify\Harmonify\obj\Debug\netcoreapp3.1\Harmonify.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\Overclock-1\source\repos\Harmonify\Harmonify\obj\Debug\netcoreapp3.1\Harmonify.AssemblyInfoInputs.cache
+C:\Users\Overclock-1\source\repos\Harmonify\Harmonify\obj\Debug\netcoreapp3.1\Harmonify.AssemblyInfo.cs
+C:\Users\Overclock-1\source\repos\Harmonify\Harmonify\obj\Debug\netcoreapp3.1\Harmonify.csproj.CoreCompileInputs.cache
+C:\Users\Overclock-1\source\repos\Harmonify\Harmonify\obj\Debug\netcoreapp3.1\Harmonify.dll
+C:\Users\Overclock-1\source\repos\Harmonify\Harmonify\obj\Debug\netcoreapp3.1\Harmonify.pdb
+C:\Users\Overclock-1\source\repos\Harmonify\Harmonify\obj\Debug\netcoreapp3.1\Harmonify.genruntimeconfig.cache
+C:\Users\Overclock-1\source\repos\Harmonify\Harmonify\obj\Debug\netcoreapp3.1\Harmonify.SelectTrackForm.resources
