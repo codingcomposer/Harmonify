@@ -63,6 +63,7 @@ namespace Harmonify
                 MakeNotes();
                 MakeMeasures();
                 MakeSection();
+                KeySignature.AssumeKey(sections[sections.Count - 1]);
                 Chordify();
                 // Analyze Song forms
                 // incomplete bar check
