@@ -39,7 +39,7 @@ namespace Harmonify
             this.MidiFileNameLabel.AutoSize = true;
             this.MidiFileNameLabel.Location = new System.Drawing.Point(201, 38);
             this.MidiFileNameLabel.Name = "MidiFileNameLabel";
-            this.MidiFileNameLabel.Size = new System.Drawing.Size(171, 15);
+            this.MidiFileNameLabel.Size = new System.Drawing.Size(174, 15);
             this.MidiFileNameLabel.TabIndex = 0;
             this.MidiFileNameLabel.Text = "Select a midi file to harmonify.";
             // 
@@ -71,6 +71,7 @@ namespace Harmonify
             this.Controls.Add(this.MidiFileNameLabel);
             this.Name = "MainForm";
             this.Text = "MainForm";
+            this.Load += new System.EventHandler(this.MainForm_Load);
             this.ResumeLayout(false);
             this.PerformLayout();
 

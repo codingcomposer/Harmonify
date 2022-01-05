@@ -28,8 +28,15 @@ namespace Harmonify
                     song.Analyze();
                 }
                 textBox1.Text = null;
-                textBox1.Text += "BPM: " + Song.Bpm + "\r\n";
                 textBox1.Text += "Time Signature : " + Song.TimeSigTop + "/" + Song.TimeSigBottom + "\r\n";
+                if(song.KeySignature == null)
+                {
+                    textBox1.Text += "Key Signature : Unknown";
+                }
+                else
+                {
+                    textBox1.Text += "Key Signature : " + Note.GetNoteName(song.KeySignature.tonicNote);
+                }
                 textBox1.Text += "\r\n";
                 for(int i = 0; i < song.sections.Count; i++)
                 {
@@ -38,8 +45,8 @@ namespace Harmonify
                     {
                         for(int k = 0; k < song.sections[i].measures[j].chords.Count; k++)
                         {
-                            
-                            textBox1.Text += Song.GetNoteName(song.sections[i].measures[j].chords[k].root);
+
+                            textBox1.Text += Note.GetNoteName(song.sections[i].measures[j].chords[k].root); //Chord.GetChordNotation(song.sections[i].measures[j].chords[k].chordNotes);
                         }
                         textBox1.Text += "|";
                     }
@@ -102,6 +109,11 @@ namespace Harmonify
 
         private void MakeChordsButton_Click(object sender, EventArgs e)
         {
+        }
+
+        private void MainForm_Load(object sender, EventArgs e)
+        {
+
         }
     }
 }

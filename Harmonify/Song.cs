@@ -13,10 +13,11 @@ namespace Harmonify
         public static int TimeSigBottom { get; private set; }
         public List<Measure> measures = new List<Measure>();
         public List<Note> notes = new List<Note>();
-        private enum eNoteName { C, Csharp, D, Dsharp, E, F, Fsharp, G, Gsharp, A, Asharp, B };
         private int targetTrackIndex = 0;
         private IuiHandler iuiHandler;
         public List<Section> sections = new List<Section>();
+
+        public KeySignature KeySignature { get; private set; }
 
         public Song(string path, IuiHandler _iuiHandler)
         {
@@ -54,6 +55,7 @@ namespace Harmonify
                     }
                 }
             }
+ 
         }
         public void Analyze()
         {
@@ -63,7 +65,12 @@ namespace Harmonify
                 MakeNotes();
                 MakeMeasures();
                 MakeSection();
-                KeySignature.AssumeKey(sections[sections.Count - 1]);
+                KeySignature = KeySignature.AssumeKey(sections[sections.Count - 1]);
+                if(KeySignature == null)
+                {
+                    MessageBox.Show("적합한 키를 찾지 못했습니다.");
+                    return;
+                }
                 Chordify();
                 // Analyze Song forms
                 // incomplete bar check
@@ -71,12 +78,13 @@ namespace Harmonify
 
         }
 
-        private void AssumeKey()
-        {
-            
-        }
         private void Chordify()
         {
+            int[] keyNotes = KeySignature.GetKeyNotes(KeySignature.tonicNote, true);
+            List<int> primaryTriads = new List<int>();
+            primaryTriads.Add(keyNotes[0]);
+            primaryTriads.Add(keyNotes[3]);
+            primaryTriads.Add(keyNotes[4]);
             for(int i = 0; i < sections.Count; i++)
             {
                 if (sections[i].measures[0].notes.Count > 0)
@@ -88,12 +96,13 @@ namespace Harmonify
                         int matchestRoot = 0;
                         int matchestMatch = 0;
                         int currentMatch = 0;
-                        for(int k = 0; k < 12; k++)
+                        List<int> matchedChordNotes = new List<int>();
+                        for(int k = 0; k < primaryTriads.Count; k++)
                         {
                             currentMatch = 0;
                             for(int m = 0; m < mostweightedNotes.Count; m++)
                             {
-                                List<int> chordNotes = KeySignature.GetDiatonicChordNotes(0, true, k);
+                                List<int> chordNotes = KeySignature.GetDiatonicChordNotesFromRoot(0, true, k);
                                 if(chordNotes != null && chordNotes.Count > 1)
                                 {
                                     currentMatch += Chord.Match(mostweightedNotes[m], chordNotes);
@@ -102,11 +111,13 @@ namespace Harmonify
                             // 현재 거가 더 잘맞으면
                             if(currentMatch > matchestMatch)
                             {
-                                matchestRoot = k;
+                                matchestRoot = primaryTriads[k];
                                 matchestMatch = currentMatch;
+                                matchedChordNotes = KeySignature.GetDiatonicChordNotesFromRoot(0, true, primaryTriads[k]);
                             }
                         }
                         chord.root = matchestRoot;
+
                         chord.major = true;
                         sections[i].measures[j].chords.Add(chord);
                     }
@@ -232,10 +243,6 @@ namespace Harmonify
                 }
             }
             return midiTrack.ToString();
-        }
-        public static string GetNoteName(int noteNumber)
-        {
-            return ((eNoteName)((noteNumber) % 12)).ToString();
         }
 
         public void SetTrackIndex(int index)

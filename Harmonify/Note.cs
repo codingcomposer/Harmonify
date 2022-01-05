@@ -11,6 +11,7 @@ namespace Harmonify
         public int offTime;
         public int length;
         public string noteName;
+        private enum eNoteName { C, Csharp, D, Dsharp, E, F, Fsharp, G, Gsharp, A, Asharp, B };
 
         public Note(int _noteNumber, int _onTime, int _offTime)
         {
@@ -18,7 +19,7 @@ namespace Harmonify
             onTime = _onTime;
             offTime = _offTime;
             length = offTime - onTime;
-            noteName = Song.GetNoteName(noteNumber);
+            noteName = GetNoteName(noteNumber);
         }
 
         public Note(Note note)
@@ -27,7 +28,11 @@ namespace Harmonify
             onTime = note.onTime;
             offTime = note.offTime;
             length = offTime - onTime;
-            noteName = Song.GetNoteName(noteNumber);
+            noteName = GetNoteName(noteNumber);
+        }
+        public static string GetNoteName(int noteNumber)
+        {
+            return ((eNoteName)((noteNumber) % 12)).ToString();
         }
 
     }
