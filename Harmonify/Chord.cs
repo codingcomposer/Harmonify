@@ -8,7 +8,7 @@ namespace Harmonify
     {
         public int root;
         public bool major;
-        public List<int> chordNotes;
+        public List<int> chordNotes = new List<int>();
 
         public string GetChordNotation()
         {
@@ -30,23 +30,40 @@ namespace Harmonify
             }
         }
 
-        public static string GetChordNotation(List<int> _chordNotes)
+        public static string GetChordNotation(List<int> chordNotes)
         {
-            List<int> notes = new List<int>();
-            notes.AddRange(_chordNotes);
-            if (notes.Count < 3)
+            string result = null;
+            if (chordNotes.Count < 3)
             {
                 return null;
-            }
-            else if (notes.Count == 3)
-            {
-                List<int> possibleTriad = GetPossibleTriad(notes);
-                return Note.GetNoteName(possibleTriad[0]) + (possibleTriad[1] - possibleTriad[2] == 3 ? "m" : "");
             }
             else
             {
-                // TODO :
-                return null;
+                
+                List<int> possibleTriad = GetPossibleTriad(chordNotes);
+                result = Note.GetNoteName(possibleTriad[0]);
+                int mediantInterval = (possibleTriad[1] - possibleTriad[0]);
+                if(mediantInterval < 0)
+                {
+                    mediantInterval += 12;
+                }
+                if(mediantInterval == 3)
+                {
+                    result += "m";
+                }
+                if(chordNotes.Count == 4)
+                {
+                    int sevenInterval = possibleTriad[3] - possibleTriad[0];
+                    if(sevenInterval == 10)
+                    {
+                        result += "7";
+                    }
+                    else if(sevenInterval == 11) 
+                    {
+                        result += "M7";
+                    }
+                }
+                return result;
             }
         }
 

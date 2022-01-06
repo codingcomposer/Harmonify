@@ -15,6 +15,8 @@ namespace Harmonify
         public MainForm()
         {
             InitializeComponent();
+            comboBox1.SelectedIndex = 0;
+            comboBox2.SelectedIndex = 0;
         }
 
         private void ImportFileButton_Click(object sender, EventArgs e)
@@ -23,34 +25,6 @@ namespace Harmonify
             if (midiFilePath != null)
             {
                 song = new Song(midiFilePath, this);
-                if (Song.MidiFile != null)
-                {
-                    song.Analyze();
-                }
-                textBox1.Text = null;
-                textBox1.Text += "Time Signature : " + Song.TimeSigTop + "/" + Song.TimeSigBottom + "\r\n";
-                if(song.KeySignature == null)
-                {
-                    textBox1.Text += "Key Signature : Unknown";
-                }
-                else
-                {
-                    textBox1.Text += "Key Signature : " + Note.GetNoteName(song.KeySignature.tonicNote);
-                }
-                textBox1.Text += "\r\n";
-                for(int i = 0; i < song.sections.Count; i++)
-                {
-                    textBox1.Text += "\r\n" + i.ToString() + ":";
-                    for(int j = 0; j < song.sections[i].measures.Count; j++)
-                    {
-                        for(int k = 0; k < song.sections[i].measures[j].chords.Count; k++)
-                        {
-
-                            textBox1.Text += Note.GetNoteName(song.sections[i].measures[j].chords[k].root); //Chord.GetChordNotation(song.sections[i].measures[j].chords[k].chordNotes);
-                        }
-                        textBox1.Text += "|";
-                    }
-                }
             }
             else
             {
@@ -115,5 +89,63 @@ namespace Harmonify
         {
 
         }
+
+        private void button1_Click(object sender, EventArgs e)
+        {
+        }
+
+        // Analyze 버튼
+        private void button2_Click(object sender, EventArgs e)
+        {
+            if (song == null)
+            {
+                return;
+            }
+            if(comboBox1.SelectedIndex != 0)
+            {
+                song.KeySignature = new KeySignature();
+                song.KeySignature.tonicNote = comboBox1.SelectedIndex - 1;
+            }
+            if (Song.MidiFile != null)
+            {
+                song.Analyze();                
+            }
+            textBox1.Text = null;
+            textBox1.Text += "Time Signature : " + Song.TimeSigTop + "/" + Song.TimeSigBottom + "\r\n";
+            if (song.KeySignature == null)
+            {
+                textBox1.Text += "Key Signature : Unknown";
+            }
+            else
+            {
+                textBox1.Text += "Key Signature : " + Note.GetNoteName(song.KeySignature.tonicNote);
+            }
+            textBox1.Text += "\r\n";
+            for (int i = 0; i < song.sections.Count; i++)
+            {
+                textBox1.Text += "\r\n" + i.ToString() + ":";
+                for (int j = 0; j < song.sections[i].measures.Count; j++)
+                {
+                    for (int k = 0; k < song.sections[i].measures[j].chords.Count; k++)
+                    {
+                        if (song.sections[i].measures[j].chords[k].chordNotes.Count > 0)
+                        {
+                            textBox1.Text += Chord.GetChordNotation(song.sections[i].measures[j].chords[k].chordNotes);
+                        }
+                    }
+                    textBox1.Text += "|";
+                }
+            }
+        }
+        private void comboBox1_SelectedIndexChanged(object sender, EventArgs e)
+        {
+
+        }
+
+        private void comboBox2_SelectedIndexChanged(object sender, EventArgs e)
+        {
+
+        }
+
     }
 }

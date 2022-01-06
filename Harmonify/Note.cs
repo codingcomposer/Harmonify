@@ -32,7 +32,7 @@ namespace Harmonify
         }
         public static string GetNoteName(int noteNumber)
         {
-            return ((eNoteName)((noteNumber) % 12)).ToString();
+            return ((eNoteName)((noteNumber) % 12)).ToString().Replace("sharp", "#");
         }
 
     }
