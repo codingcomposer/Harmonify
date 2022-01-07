@@ -25,6 +25,16 @@ namespace Harmonify
             if (midiFilePath != null)
             {
                 song = new Song(midiFilePath, this);
+                List<KeySignature> assumedKeys = song.AssumeKeys();
+                if(assumedKeys != null)
+                {
+                    string keySentence = "예상 키 : ";
+                    for(int i = 0; i < assumedKeys.Count; i++)
+                    {
+                        keySentence += Note.GetNoteName(assumedKeys[i].tonicNote) + "Major ";
+                    }
+                    assumedKeysLabel.Text = keySentence;
+                }
             }
             else
             {

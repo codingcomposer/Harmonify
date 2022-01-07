@@ -37,6 +37,7 @@ namespace Harmonify
             this.comboBox2 = new System.Windows.Forms.ComboBox();
             this.button2 = new System.Windows.Forms.Button();
             this.label1 = new System.Windows.Forms.Label();
+            this.assumedKeysLabel = new System.Windows.Forms.Label();
             this.SuspendLayout();
             // 
             // MidiFileNameLabel
@@ -132,11 +133,20 @@ namespace Harmonify
             this.label1.TabIndex = 7;
             this.label1.Text = "Key";
             // 
+            // assumedKeysLabel
+            // 
+            this.assumedKeysLabel.AutoSize = true;
+            this.assumedKeysLabel.Location = new System.Drawing.Point(298, 92);
+            this.assumedKeysLabel.Name = "assumedKeysLabel";
+            this.assumedKeysLabel.Size = new System.Drawing.Size(0, 15);
+            this.assumedKeysLabel.TabIndex = 8;
+            // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(800, 450);
+            this.Controls.Add(this.assumedKeysLabel);
             this.Controls.Add(this.label1);
             this.Controls.Add(this.button2);
             this.Controls.Add(this.comboBox2);
@@ -163,5 +173,6 @@ namespace Harmonify
         private System.Windows.Forms.ComboBox comboBox2;
         private System.Windows.Forms.Button button2;
         private System.Windows.Forms.Label label1;
+        private System.Windows.Forms.Label assumedKeysLabel;
     }
 }

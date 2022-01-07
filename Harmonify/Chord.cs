@@ -170,33 +170,40 @@ namespace Harmonify
                     return 0;
                 }
             }
+            // 완전4도
             else if (difference == 5)
             {
                 return 0;
             }
+            // 감5도. 트라이톤
             else if (difference == 6)
             {
                 return 0;
             }
+            // 완전5도
             else if (difference == 7)
             {
                 return 2;
             }
+            // 증5도. 단6도
             else if (difference == 8)
             {
                 return 0;
             }
+            // 장6도
             else if (difference == 9)
             {
                 return 1;
             }
+            // 단7도
             else if (difference == 10)
             {
                 return 2;
             }
+            // 장7도
             else if (difference == 11)
             {
-                return 1;
+                return 2;
             }
             else
             {

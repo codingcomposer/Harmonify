@@ -25,9 +25,10 @@ namespace Harmonify
             System.Windows.Forms.MessageBox.Show(str);
         }
 
-        // 노트들을 보고 키를 추측하는 함수
-        public static KeySignature AssumeKey(Section section)
+
+        public static List<KeySignature> AssumeKeys(Section section)
         {
+            List<KeySignature> result = new List<KeySignature>();
             // 전체 마디에서 음들의 경중을 따짐.
             int[] weightedNotes = new int[12];
             for (int i = 0; i < section.measures.Count; i++)
@@ -51,7 +52,7 @@ namespace Harmonify
             // 7개 음까지만 추림.
             for (int i = 0; i < tuples.Count; i++)
             {
-                
+
                 if (i > 6)
                 {
                     tuples.RemoveAt(i);
@@ -64,23 +65,10 @@ namespace Harmonify
                 presentedNotes.Add(tuples[i].Item1);
             }
             presentedNotes.Sort();
-            string presentedNotesString = null;
-            for(int i = 0; i < presentedNotes.Count; i++)
-            {
-                presentedNotesString += Note.GetNoteName(presentedNotes[i]);
-            }
-            System.Windows.Forms.MessageBox.Show("Presented NoteString : " + presentedNotesString);
-            // 등장한 음들을 가지고 키를 예상한다.
             List<int> assumedKeys = AssumeKeysFromNotes(presentedNotes);
-            string assumedKeysString = null;
-            for(int i = 0; i < assumedKeys.Count; i++)
-            {
-                assumedKeysString += Note.GetNoteName(assumedKeys[i]);
-            }
-            System.Windows.Forms.MessageBox.Show(assumedKeysString);
             // 마지막 노트는 섹션의 마지막 마디의 노트 중 마지막것이다.
             int lastNote = section.measures[section.measures.Count - 1].notes[section.measures[section.measures.Count - 1].notes.Count - 1].noteNumber;
-            
+
             // 등장한 음으로 예상한 키 중
             for (int i = 0; i < assumedKeys.Count; i++)
             {
@@ -95,12 +83,18 @@ namespace Harmonify
                         {
                             KeySignature keySignature = new KeySignature();
                             keySignature.tonicNote = assumedKeys[i];
-                            return  keySignature;
+                            result.Add(keySignature);
+                            return result;
                         }
                     }
                 }
             }
-            return null;
+            for(int i = 0; i < assumedKeys.Count; i++)
+            {
+                result.Add(new KeySignature() { tonicNote = assumedKeys[i] });
+
+            }
+            return result;
         }
 
         private static float GetSimilarity(int[] keyNotes, List<int> notes)

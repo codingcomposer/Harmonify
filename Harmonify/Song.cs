@@ -14,7 +14,7 @@ namespace Harmonify
         public static int TimeSigBottom { get; private set; }
         public List<Measure> measures = new List<Measure>();
         public List<Note> notes = new List<Note>();
-        private int targetTrackIndex = 0;
+        private int targetTrackIndex = -1;
         private IuiHandler iuiHandler;
         public List<Section> sections = new List<Section>();
 
@@ -56,24 +56,45 @@ namespace Harmonify
                     }
                 }
             }
-
-        }
-
-        public void Analyze()
-        {
             targetTrackIndex = GetTargetTrackIndex();
-            if (targetTrackIndex != -1)
+            if(targetTrackIndex != -1)
             {
                 MakeNotes();
                 MakeMeasures();
                 MakeSection();
-                if(KeySignature == null)
+            }
+
+        }
+
+        public List<KeySignature> AssumeKeys()
+        {
+            Section firstNonEmptySection = GetFirstNonEmptySection();
+            if(firstNonEmptySection != null)
+            {
+                return KeySignature.AssumeKeys(firstNonEmptySection);
+            }
+            else
+            {
+                return null;
+            }
+        }
+
+        public void Analyze()
+        {
+            if (targetTrackIndex != -1)
+            {
+                if (KeySignature == null)
                 {
-                    KeySignature = KeySignature.AssumeKey(sections[sections.Count - 1]);
-                    if (KeySignature == null)
+                    List<KeySignature> candidates = KeySignature.AssumeKeys(sections[sections.Count - 1]);
+                    
+                    if (candidates.Count < 1)
                     {
                         MessageBox.Show("적합한 키를 찾지 못했습니다.");
                         return;
+                    }
+                    else
+                    {
+                        KeySignature = candidates[0];
                     }
                 }
                 Chordify();
@@ -83,93 +104,118 @@ namespace Harmonify
 
         }
 
+        private Section GetFirstNonEmptySection()
+        {
+            for (int i = 0; i < sections.Count; i++)
+            {
+                if (sections[i].measures.Count > 0 && sections[i].measures[0].notes.Count > 0)
+                {
+                    return sections[i];
+                }
+            }
+            return null;
+        }
+
         private void Chordify()
         {
             int[] keyNotes = KeySignature.GetKeyNotes(KeySignature.tonicNote, true);
             List<int> primaryTriads = new List<int>();
-            Chord chord;
             primaryTriads.Add(keyNotes[0]);
             primaryTriads.Add(keyNotes[1]);
             primaryTriads.Add(keyNotes[2]);
             primaryTriads.Add(keyNotes[3]);
             primaryTriads.Add(keyNotes[4]);
             primaryTriads.Add(keyNotes[5]);
-
+            PreliminaryPass(keyNotes);
             for (int i = 0; i < sections.Count; i++)
             {
                 if (sections[i].measures[0].notes.Count > 0)
                 {
-                    // 첫번째 마디 코드 정함.
-                    List<Tuple<int, int>> weightedNotes = sections[i].measures[0].GetWeightedNotes();
-                    int matchestRoot = 0;
-                    int matchestMatch = 0;
-                    int currentMatch;
-                    // 1, 4도만 체크
-                    List<int> oneTwoFour = new List<int>();
-                    oneTwoFour.Add(keyNotes[0]);
-                    oneTwoFour.Add(keyNotes[3]);
-                    for (int k = 0; k < oneTwoFour.Count - 1; k++)
+                    for (int j = 1; j < sections[i].measures.Count - 1; j++)
                     {
-                        currentMatch = 0;
-                        for (int m = 0; m < weightedNotes.Count; m++)
+                        // 이미 코드가 있으면 넘김.
+                        if (sections[i].measures[j].chords.Count > 0)
                         {
-                            List<int> chordNotes = KeySignature.GetDiatonicChordNotesFromRoot(0, true, oneTwoFour[k]);
-                            if (chordNotes != null && chordNotes.Count > 1)
-                            {
-                                currentMatch += Chord.Match(weightedNotes[m].Item1, chordNotes) * weightedNotes[m].Item2;
-                            }
+                            continue;
                         }
-                        // 현재 거가 더 잘맞으면
-                        if (currentMatch >= matchestMatch)
+                        // 아니면
+                        else
                         {
-                            matchestRoot = primaryTriads[k];
-                            matchestMatch = currentMatch;
-                        }
-                    }
-                    chord = new Chord();
-                    chord.root = matchestRoot;
-                    chord.chordNotes = KeySignature.GetDiatonicChordNotesFromRoot(KeySignature.tonicNote, true, matchestRoot);
-
-                    chord.major = true;
-                    sections[i].measures[0].chords.Add(chord);
-                    for (int j = 1; j < sections[i].measures.Count; j++)
-                    {
-                        chord = new Chord();
-                        weightedNotes = sections[i].measures[j].GetWeightedNotes();
-                        matchestRoot = 0;
-                        matchestMatch = 0;
-                        for (int k = 0; k < primaryTriads.Count; k++)
-                        {
-                            currentMatch = 0;
-                            List<int> chordNotes = KeySignature.GetDiatonicChordNotesFromRoot(KeySignature.tonicNote, true, primaryTriads[k]);
-
-                            if (sections[i].measures[j - 1].chords[0].root != primaryTriads[k])
+                            List<int> candidateChords = new List<int>();
+                            for(int k = 0; k < primaryTriads.Count; k++)
                             {
-                                for (int m = 0; m < weightedNotes.Count; m++)
+                                if(sections[i].measures[j - 1].chords[0].root != primaryTriads[k])
                                 {
-                                    if (chordNotes != null && chordNotes.Count > 1)
-                                    {
-                                        currentMatch += Chord.Match(weightedNotes[m].Item1, chordNotes) * weightedNotes[m].Item2;
-                                    }
+                                    candidateChords.Add(primaryTriads[k]);
                                 }
                             }
-                            // 현재 거가 더 잘맞으면
-                            if (currentMatch > matchestMatch)
-                            {
-                                matchestRoot = primaryTriads[k];
-                                matchestMatch = currentMatch;
-                            }
+                            sections[i].measures[j].chords.Add(GetMatchingChord(candidateChords, sections[i].measures[j].GetWeightedNotes()));
                         }
-                        
-
-                        chord.root = matchestRoot;
-                        chord.chordNotes = KeySignature.GetDiatonicChordNotesFromRoot(KeySignature.tonicNote, true, matchestRoot);
-                        chord.major = true;
-
-                        sections[i].measures[j].chords.Add(chord);
                     }
                 }
             }
+        }
+
+        // 첫 패스 전에 해야 할 것 : 첫코드, 마지막 코드 작성.
+        private void PreliminaryPass(int[] keyNotes)
+        {
+            for(int i = 0; i < sections.Count; i++)
+            {
+                // 비지 않은 섹션에 대해서.
+                if(sections[i].measures.Count > 0 && sections[i].measures[0].notes.Count > 0)
+                {
+                    // 첫코드 작성
+
+                    // 1, 4도만 처음에 올수 있음. 체크
+                    List<int> oneFour = new List<int>();
+                    oneFour.Add(keyNotes[0]);
+                    oneFour.Add(keyNotes[3]);
+                    sections[i].measures[0].chords.Add(GetMatchingChord(oneFour, sections[i].measures[0].GetWeightedNotes()));
+
+                    // 마지막 코드 작성 : 무조건 1도
+                    List<int> one = new List<int>();
+                    one.Add(keyNotes[0]);
+                    sections[i].measures[sections[i].measures.Count - 1].chords.Add(GetMatchingChord(one, sections[i].measures[sections[i].measures.Count - 1].GetWeightedNotes()));
+
+                    // 마지막에서 두번째 코드 : 4, 5도
+                    List<int> fourFive = new List<int>();
+                    fourFive.Add(keyNotes[3]);
+                    fourFive.Add(keyNotes[4]);
+                    sections[i].measures[sections[i].measures.Count - 2].chords.Add(GetMatchingChord(fourFive, sections[i].measures[sections[i].measures.Count - 2].GetWeightedNotes()));
+                    
+                }
+            }
+        }
+
+        private Chord GetMatchingChord(List<int> candidateChords, List<Tuple<int, int>> weightedNotes)
+        {
+            int matchestRoot = 0;
+            int matchestMatch = 0;
+            int currentMatch;
+            for (int j = 0; j < candidateChords.Count; j++)
+            {
+                currentMatch = 0;
+                for (int k = 0; k < weightedNotes.Count; k++)
+                {
+                    List<int> chordNotes = KeySignature.GetDiatonicChordNotesFromRoot(KeySignature.tonicNote, true, candidateChords[j]);
+                    if (chordNotes != null && chordNotes.Count > 1)
+                    {
+                        currentMatch += Chord.Match(weightedNotes[k].Item1, chordNotes) * weightedNotes[k].Item2;
+                    }
+                }
+                // 현재 거가 더 잘맞으면
+                if (currentMatch >= matchestMatch)
+                {
+                    matchestRoot = candidateChords[j];
+                    matchestMatch = currentMatch;
+                }
+            }
+            return new Chord
+            {
+                root = matchestRoot,
+                chordNotes = KeySignature.GetDiatonicChordNotesFromRoot(KeySignature.tonicNote, true, matchestRoot),
+                major = true
+            }; ;
         }
 
 
@@ -266,7 +312,7 @@ namespace Harmonify
         public void SetTrackIndex(int index)
         {
             targetTrackIndex = index;
-            MessageBox.Show(targetTrackIndex + "선택됨");
+            MessageBox.Show(targetTrackIndex + "번 트랙 선택됨");
         }
 
         private void MakeNotes()
