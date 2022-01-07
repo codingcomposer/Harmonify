@@ -149,11 +149,12 @@ namespace Harmonify
                                     candidateChords.Add(primaryTriads[k]);
                                 }
                             }
-                            sections[i].measures[j].chords.Add(GetMatchingChord(candidateChords, sections[i].measures[j].GetWeightedNotes()));
+                            sections[i].measures[j].chords.Add(GetMatchingChord(candidateChords, sections[i].measures[j].GetWeightedNotes(), sections[i], j));
                         }
                     }
                 }
             }
+
         }
 
         // 첫 패스 전에 해야 할 것 : 첫코드, 마지막 코드 작성.
@@ -170,24 +171,56 @@ namespace Harmonify
                     List<int> oneFour = new List<int>();
                     oneFour.Add(keyNotes[0]);
                     oneFour.Add(keyNotes[3]);
-                    sections[i].measures[0].chords.Add(GetMatchingChord(oneFour, sections[i].measures[0].GetWeightedNotes()));
+                    sections[i].measures[0].chords.Add(GetMatchingChord(oneFour, sections[i].measures[0].GetWeightedNotes(), sections[i], 0));
 
                     // 마지막 코드 작성 : 무조건 1도
                     List<int> one = new List<int>();
                     one.Add(keyNotes[0]);
-                    sections[i].measures[sections[i].measures.Count - 1].chords.Add(GetMatchingChord(one, sections[i].measures[sections[i].measures.Count - 1].GetWeightedNotes()));
+                    int lastMeasureIndex = sections[i].measures.Count - 1;
+                    sections[i].measures[lastMeasureIndex].chords.Add(GetMatchingChord(one, sections[i].measures[lastMeasureIndex].GetWeightedNotes(), sections[i], lastMeasureIndex));
 
                     // 마지막에서 두번째 코드 : 4, 5도
                     List<int> fourFive = new List<int>();
                     fourFive.Add(keyNotes[3]);
                     fourFive.Add(keyNotes[4]);
-                    sections[i].measures[sections[i].measures.Count - 2].chords.Add(GetMatchingChord(fourFive, sections[i].measures[sections[i].measures.Count - 2].GetWeightedNotes()));
-                    
+                    sections[i].measures[lastMeasureIndex - 1].chords.Add(GetMatchingChord(fourFive, sections[i].measures[lastMeasureIndex - 1].GetWeightedNotes(), sections[i], lastMeasureIndex - 1));
+
+                    for(int j = 0; j < sections[i].measures.Count; j++)
+                    {
+                        if(sections[i].measures[j].chords.Count < 1 && !KeySignature.IsDiatonic(sections[i].measures[j].notes))
+                        {
+                            Section newSection = new Section();
+                            newSection.measures.Add(sections[i].measures[j]);
+                            List<KeySignature> assumedKeys = KeySignature.AssumeKeys(newSection);
+                            string str = null;
+                            for(int k = 0; k < assumedKeys.Count; k++)
+                            {
+                                str += Note.GetNoteName(assumedKeys[k].tonicNote);
+                            }
+                            MessageBox.Show(j + "인덱스 마디 : " + str);
+                        }
+                    }
                 }
             }
         }
 
-        private Chord GetMatchingChord(List<int> candidateChords, List<Tuple<int, int>> weightedNotes)
+        private float AvoidRepetition(Section section, int measureIndex, int chordRoot)
+        {
+            int currentIndex = measureIndex - 1;
+            float coefficient = 1f;
+            // (4마디 이후부턴 중복되어도 상관 없다.
+            while(currentIndex > 0 && measureIndex - currentIndex < 4)
+            {
+                if(section.measures[currentIndex].chords.Count > 0 && section.measures[currentIndex].chords[0].root == chordRoot)
+                {
+                    coefficient -= 1f / (measureIndex - currentIndex) * (measureIndex - currentIndex);
+                }
+                currentIndex--;
+            }
+            return coefficient;
+        }
+
+        private Chord GetMatchingChord(List<int> candidateChords, List<Tuple<int, int>> weightedNotes, Section section, int measureIndex)
         {
             int matchestRoot = 0;
             int matchestMatch = 0;
@@ -203,6 +236,7 @@ namespace Harmonify
                         currentMatch += Chord.Match(weightedNotes[k].Item1, chordNotes) * weightedNotes[k].Item2;
                     }
                 }
+                currentMatch = (int)(currentMatch *  AvoidRepetition(section, measureIndex, candidateChords[j]));
                 // 현재 거가 더 잘맞으면
                 if (currentMatch >= matchestMatch)
                 {

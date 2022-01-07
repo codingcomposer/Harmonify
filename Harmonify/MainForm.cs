@@ -144,6 +144,10 @@ namespace Harmonify
                         }
                     }
                     textBox1.Text += "|";
+                    if(j % 8 == 7)
+                    {
+                        textBox1.Text += "\r\n";
+                    }
                 }
             }
         }

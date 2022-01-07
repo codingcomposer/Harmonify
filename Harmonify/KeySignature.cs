@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Linq;
 
 namespace Harmonify
 {
@@ -168,6 +169,19 @@ namespace Harmonify
                 keyNotes[i] = (notes[i] + keyRoot) % 12;
             }
             return keyNotes;
+        }
+
+        public bool IsDiatonic(List<Note> notes)
+        {
+            List<int> keyNotes = GetKeyNotes(tonicNote, true).ToList();
+            for (int i = 0; i < notes.Count; i++)
+            {
+                if (!keyNotes.Contains(notes[i].noteNumber % 12))
+                {
+                    return false;
+                }
+            }
+            return true;
         }
 
 

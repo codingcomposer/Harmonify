@@ -125,90 +125,96 @@ namespace Harmonify
 
         public static int Match(int note, List<int> chordNotes)
         {
-            int root = chordNotes[0];
-            if (note < root)
+            int match = 0;
+            int thirdInterval = chordNotes[1] - note;
+            int fifthInterval = chordNotes[2] - note;
+            if (chordNotes.Contains(note))
             {
-                note += 12;
+                return 10;
             }
-            int difference = note - root;
-            // 완전 1도
-            if (difference == 0)
+            else if(thirdInterval == -1 || thirdInterval == 1 || fifthInterval == -1 || fifthInterval == 1)
             {
-                return 2;
-            }
-            // 감2도
-            else if (difference == 1)
-            {
-                return 0;
-            }
-            // 단2도
-            else if (difference == 2)
-            {
-                return 1;
-            }
-            // 단3도
-            else if (difference == 3)
-            {
-                if (difference == (chordNotes[1] - root))
-                {
-                    return 2;
-                }
-                else
-                {
-                    return 0;
-                }
-            }
-            // 장3도
-            else if (difference == 4)
-            {
-                if (difference == (chordNotes[1] - root))
-                {
-                    return 2;
-                }
-                else
-                {
-                    return 0;
-                }
-            }
-            // 완전4도
-            else if (difference == 5)
-            {
-                return 0;
-            }
-            // 감5도. 트라이톤
-            else if (difference == 6)
-            {
-                return 0;
-            }
-            // 완전5도
-            else if (difference == 7)
-            {
-                return 2;
-            }
-            // 증5도. 단6도
-            else if (difference == 8)
-            {
-                return 0;
-            }
-            // 장6도
-            else if (difference == 9)
-            {
-                return 1;
-            }
-            // 단7도
-            else if (difference == 10)
-            {
-                return 2;
-            }
-            // 장7도
-            else if (difference == 11)
-            {
-                return 2;
+                return -10;
             }
             else
             {
                 return 0;
             }
+            /*
+                int chordNote = chordNotes[0];
+            
+                if (note < chordNote)
+                {
+                    note += 12;
+                }
+                int difference = note - chordNote;
+                // 완전 1도
+                if (difference == 0)
+                {
+                    match += 2;
+                }
+                // 감2도
+                else if (difference == 1)
+                {
+                }
+                // 단2도
+                else if (difference == 2)
+                {
+                    match += 1;
+                }
+                // 단3도
+                else if (difference == 3)
+                {
+                    if (difference == (chordNotes[1] - chordNote))
+                    {
+                        match += 2;
+                    }
+                }
+                // 장3도
+                else if (difference == 4)
+                {
+                    if (difference == (chordNotes[1] - chordNote))
+                    {
+                        match += 2;
+                    }
+                }
+                // 완전4도
+                else if (difference == 5)
+                {
+                }
+                // 감5도. 트라이톤
+                else if (difference == 6)
+                {
+                }
+                // 완전5도
+                else if (difference == 7)
+                {
+                    match += 2;
+                }
+                // 증5도. 단6도
+                else if (difference == 8)
+                {
+                }
+                // 장6도
+                else if (difference == 9)
+                {
+                    match += 1;
+                }
+                // 단7도
+                else if (difference == 10)
+                {
+                    match += 2;
+                }
+                // 장7도
+                else if (difference == 11)
+                {
+                    match += 2;
+                }
+                else
+                {
+                }
+            */
+            return match;
         }
     }
 }
