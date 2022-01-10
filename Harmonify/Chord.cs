@@ -124,16 +124,16 @@ namespace Harmonify
             return true;
         }
 
-        public static int Match(int keyRoot, int note, List<int> chordNotes)
+        public static int Match(KeySignature keySignature, int note, List<int> chordNotes)
         {
             note %= 12;
-            int mode = note - keyRoot;
+            int mode = note - keySignature.TonicNote;
             int match = 0;
             if(mode < 0)
             {
                 mode += 12;
             }
-            List<int> avoidNotes = GetAvoidNotes(keyRoot, mode);
+            List<int> avoidNotes = GetAvoidNotes(keySignature.TonicNote, mode);
             if (chordNotes.Contains(note))
             {
                 match += 2;

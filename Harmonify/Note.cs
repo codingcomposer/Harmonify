@@ -35,5 +35,6 @@ namespace Harmonify
             return ((eNoteName)((noteNumber) % 12)).ToString().Replace("sharp", "#");
         }
 
+
     }
 }

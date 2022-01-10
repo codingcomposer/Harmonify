@@ -31,7 +31,7 @@ namespace Harmonify
                     string keySentence = "예상 키 : ";
                     for(int i = 0; i < assumedKeys.Count; i++)
                     {
-                        keySentence += Note.GetNoteName(assumedKeys[i].tonicNote) + "Major ";
+                        keySentence += Note.GetNoteName(assumedKeys[i].TonicNote) + assumedKeys[i].majority.ToString();
                     }
                     assumedKeysLabel.Text = keySentence;
                 }
@@ -111,14 +111,16 @@ namespace Harmonify
             {
                 return;
             }
-            if(comboBox1.SelectedIndex != 0)
-            {
-                song.KeySignature = new KeySignature();
-                song.KeySignature.tonicNote = comboBox1.SelectedIndex - 1;
-            }
             if (Song.MidiFile != null)
             {
-                song.Analyze();                
+                if (comboBox1.SelectedIndex == 0)
+                {
+                    song.Analyze(null);
+                }
+                else
+                {
+                    song.Analyze(new KeySignature(comboBox1.SelectedIndex - 1, comboBox2.SelectedIndex == 1 ? KeySignature.Majority.major : KeySignature.Majority.harmonicMinor));
+                }
             }
             textBox1.Text = null;
             textBox1.Text += "Time Signature : " + Song.TimeSigTop + "/" + Song.TimeSigBottom + "\r\n";
@@ -128,7 +130,7 @@ namespace Harmonify
             }
             else
             {
-                textBox1.Text += "Key Signature : " + Note.GetNoteName(song.KeySignature.tonicNote);
+                textBox1.Text += "Key Signature : " + Note.GetNoteName(song.KeySignature.TonicNote);
             }
             textBox1.Text += "\r\n";
             for (int i = 0; i < song.sections.Count; i++)
