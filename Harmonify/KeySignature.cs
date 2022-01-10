@@ -8,8 +8,9 @@ namespace Harmonify
     public class KeySignature
     {
         public int tonicNote;
+        public bool major;
         private static readonly int[] majorNotes = new int[7] { 0, 2, 4, 5, 7, 9, 11 };
-        private static readonly int[] minorNotes = new int[7] { 0, 2, 3, 5, 7, 8, 10 };
+        private static readonly int[] minorNotes = new int[7] { 0, 2, 3, 5, 7, 8, 11 };
 
         private static void Log(string str)
         {
@@ -24,6 +25,55 @@ namespace Harmonify
                 str += ints[i];
             }
             System.Windows.Forms.MessageBox.Show(str);
+        }
+
+        public int GetKeyDistance(int to)
+        {
+            int sharpDistance = 0;
+            int flatDistance = 0;
+            int sharpRoot = tonicNote;
+            int flatRoot = tonicNote;
+            if(tonicNote == to)
+            {
+                return 0;
+            }
+            // C G D A E B F#
+            while(sharpDistance < 7 && to != sharpRoot)
+            {
+                sharpRoot = ((sharpRoot + 7) % 12);
+                sharpDistance++;
+            }
+            // C F Bb Eb Ab Db Gb
+            while(flatDistance < 7 && to != flatRoot)
+            {
+                flatRoot = (flatRoot + 5) % 12;
+                flatDistance++;
+            }
+            return sharpDistance < flatDistance ? sharpDistance : flatDistance;
+        }
+
+        public List<int> GetNearKeys(int distance)
+        {
+            List<int> nearKeys = new List<int>();
+            int sharpDistance = 0;
+            int flatDistance = 0;
+            int sharpRoot = tonicNote;
+            int flatRoot = tonicNote;
+            // C G D A E B F#
+            while (sharpDistance < distance)
+            {
+                sharpRoot = ((sharpRoot + 7) % 12);
+                nearKeys.Add(sharpRoot);
+                sharpDistance++;
+            }
+            // C F Bb Eb Ab Db Gb
+            while (flatDistance < distance)
+            {
+                flatRoot = (flatRoot + 5) % 12;
+                nearKeys.Add(flatRoot);
+                flatDistance++;
+            }
+            return nearKeys;
         }
 
 

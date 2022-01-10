@@ -9,6 +9,7 @@ namespace Harmonify
         public int root;
         public bool major;
         public List<int> chordNotes = new List<int>();
+        public int match;
 
         public string GetChordNotation()
         {
@@ -123,98 +124,64 @@ namespace Harmonify
             return true;
         }
 
-        public static int Match(int note, List<int> chordNotes)
+        public static int Match(int keyRoot, int note, List<int> chordNotes)
         {
+            note %= 12;
+            int mode = note - keyRoot;
             int match = 0;
-            int thirdInterval = chordNotes[1] - note;
-            int fifthInterval = chordNotes[2] - note;
+            if(mode < 0)
+            {
+                mode += 12;
+            }
+            List<int> avoidNotes = GetAvoidNotes(keyRoot, mode);
             if (chordNotes.Contains(note))
             {
-                return 10;
+                match += 2;
             }
-            else if(thirdInterval == -1 || thirdInterval == 1 || fifthInterval == -1 || fifthInterval == 1)
+            else if (avoidNotes.Contains(note))
             {
-                return -10;
+                match -= 2;
             }
             else
             {
-                return 0;
+                match += 1;
             }
-            /*
-                int chordNote = chordNotes[0];
-            
-                if (note < chordNote)
-                {
-                    note += 12;
-                }
-                int difference = note - chordNote;
-                // 완전 1도
-                if (difference == 0)
-                {
-                    match += 2;
-                }
-                // 감2도
-                else if (difference == 1)
-                {
-                }
-                // 단2도
-                else if (difference == 2)
-                {
-                    match += 1;
-                }
-                // 단3도
-                else if (difference == 3)
-                {
-                    if (difference == (chordNotes[1] - chordNote))
-                    {
-                        match += 2;
-                    }
-                }
-                // 장3도
-                else if (difference == 4)
-                {
-                    if (difference == (chordNotes[1] - chordNote))
-                    {
-                        match += 2;
-                    }
-                }
-                // 완전4도
-                else if (difference == 5)
-                {
-                }
-                // 감5도. 트라이톤
-                else if (difference == 6)
-                {
-                }
-                // 완전5도
-                else if (difference == 7)
-                {
-                    match += 2;
-                }
-                // 증5도. 단6도
-                else if (difference == 8)
-                {
-                }
-                // 장6도
-                else if (difference == 9)
-                {
-                    match += 1;
-                }
-                // 단7도
-                else if (difference == 10)
-                {
-                    match += 2;
-                }
-                // 장7도
-                else if (difference == 11)
-                {
-                    match += 2;
-                }
-                else
-                {
-                }
-            */
             return match;
+        }
+
+        private static List<int> GetAvoidNotes(int keyRoot, int mode)
+        {
+            List<int> avoidNotes = new List<int>();
+
+            switch (mode)
+            {
+                // 아이오니안 : F
+                case 0:
+                    avoidNotes.Add((keyRoot + 5) % 12);
+                    break;
+                // 도리안 : B
+                case 2:
+                    avoidNotes.Add((keyRoot + 11) % 12);
+                    break;
+                // 프리지안 : F, C
+                case 4:
+                    avoidNotes.Add((keyRoot + 5) % 12);
+                    avoidNotes.Add(keyRoot);
+                    break;
+                // 믹솔리디안
+                case 7:
+                    avoidNotes.Add(keyRoot);
+                    break;
+                // 에올리안
+                case 9:
+                    avoidNotes.Add((keyRoot + 5) % 12);
+                    break;
+                // 로크리안
+                case 11:
+                    avoidNotes.Add(keyRoot);
+                    break;
+            }
+            return avoidNotes;
         }
     }
 }

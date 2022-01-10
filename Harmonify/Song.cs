@@ -57,7 +57,7 @@ namespace Harmonify
                 }
             }
             targetTrackIndex = GetTargetTrackIndex();
-            if(targetTrackIndex != -1)
+            if (targetTrackIndex != -1)
             {
                 MakeNotes();
                 MakeMeasures();
@@ -69,7 +69,7 @@ namespace Harmonify
         public List<KeySignature> AssumeKeys()
         {
             Section firstNonEmptySection = GetFirstNonEmptySection();
-            if(firstNonEmptySection != null)
+            if (firstNonEmptySection != null)
             {
                 return KeySignature.AssumeKeys(firstNonEmptySection);
             }
@@ -86,7 +86,7 @@ namespace Harmonify
                 if (KeySignature == null)
                 {
                     List<KeySignature> candidates = KeySignature.AssumeKeys(sections[sections.Count - 1]);
-                    
+
                     if (candidates.Count < 1)
                     {
                         MessageBox.Show("적합한 키를 찾지 못했습니다.");
@@ -142,9 +142,9 @@ namespace Harmonify
                         else
                         {
                             List<int> candidateChords = new List<int>();
-                            for(int k = 0; k < primaryTriads.Count; k++)
+                            for (int k = 0; k < primaryTriads.Count; k++)
                             {
-                                if(sections[i].measures[j - 1].chords[0].root != primaryTriads[k])
+                                if (sections[i].measures[j - 1].chords[0].root != primaryTriads[k])
                                 {
                                     candidateChords.Add(primaryTriads[k]);
                                 }
@@ -160,10 +160,10 @@ namespace Harmonify
         // 첫 패스 전에 해야 할 것 : 첫코드, 마지막 코드 작성.
         private void PreliminaryPass(int[] keyNotes)
         {
-            for(int i = 0; i < sections.Count; i++)
+            for (int i = 0; i < sections.Count; i++)
             {
                 // 비지 않은 섹션에 대해서.
-                if(sections[i].measures.Count > 0 && sections[i].measures[0].notes.Count > 0)
+                if (sections[i].measures.Count > 0 && sections[i].measures[0].notes.Count > 0)
                 {
                     // 첫코드 작성
 
@@ -184,22 +184,29 @@ namespace Harmonify
                     fourFive.Add(keyNotes[3]);
                     fourFive.Add(keyNotes[4]);
                     sections[i].measures[lastMeasureIndex - 1].chords.Add(GetMatchingChord(fourFive, sections[i].measures[lastMeasureIndex - 1].GetWeightedNotes(), sections[i], lastMeasureIndex - 1));
+                    
+                    // secondary dominanant 필수 : D, E (한단계), A, B (두단계)
+                    List<int> diatonics = new List<int>();
+                    diatonics.Add(keyNotes[0]); diatonics.Add(keyNotes[1]); diatonics.Add(keyNotes[2]); diatonics.Add(keyNotes[3]); diatonics.Add(keyNotes[4]); diatonics.Add(keyNotes[5]);
 
-                    for(int j = 0; j < sections[i].measures.Count; j++)
+                    for (int j = 0; j < sections[i].measures.Count; j++)
                     {
-                        if(sections[i].measures[j].chords.Count < 1 && !KeySignature.IsDiatonic(sections[i].measures[j].notes))
+                        if (!KeySignature.IsDiatonic(sections[i].measures[j].notes))
                         {
-                            Section newSection = new Section();
-                            newSection.measures.Add(sections[i].measures[j]);
-                            List<KeySignature> assumedKeys = KeySignature.AssumeKeys(newSection);
-                            string str = null;
-                            for(int k = 0; k < assumedKeys.Count; k++)
+                            MessageBox.Show(j + "번째 마디 논 다이어토닉");
+                            List<Tuple<int, int>> weightedNotes = sections[i].measures[j].GetWeightedNotes();
+                            Chord matchestDiatonic = GetMatchingChord(diatonics, weightedNotes, sections[i], j);
+                            Chord matchestSecondaryDominant = GetMatchingSecondaryDominant(weightedNotes);
+                            sections[i].measures[j].chords.Add(matchestSecondaryDominant);
+                            /*
+                            if(matchestDiatonic.match < matchestSecondaryDominant.match)
                             {
-                                str += Note.GetNoteName(assumedKeys[k].tonicNote);
+                                sections[i].measures[j].chords.Add(matchestSecondaryDominant);
                             }
-                            MessageBox.Show(j + "인덱스 마디 : " + str);
+                            */
                         }
                     }
+
                 }
             }
         }
@@ -209,9 +216,9 @@ namespace Harmonify
             int currentIndex = measureIndex - 1;
             float coefficient = 1f;
             // (4마디 이후부턴 중복되어도 상관 없다.
-            while(currentIndex > 0 && measureIndex - currentIndex < 4)
+            while (currentIndex > 0 && measureIndex - currentIndex < 4)
             {
-                if(section.measures[currentIndex].chords.Count > 0 && section.measures[currentIndex].chords[0].root == chordRoot)
+                if (section.measures[currentIndex].chords.Count > 0 && section.measures[currentIndex].chords[0].root == chordRoot)
                 {
                     coefficient -= 1f / (measureIndex - currentIndex) * (measureIndex - currentIndex);
                 }
@@ -233,10 +240,10 @@ namespace Harmonify
                     List<int> chordNotes = KeySignature.GetDiatonicChordNotesFromRoot(KeySignature.tonicNote, true, candidateChords[j]);
                     if (chordNotes != null && chordNotes.Count > 1)
                     {
-                        currentMatch += Chord.Match(weightedNotes[k].Item1, chordNotes) * weightedNotes[k].Item2;
+                        currentMatch += Chord.Match(KeySignature.tonicNote, weightedNotes[k].Item1, chordNotes) * weightedNotes[k].Item2;
                     }
                 }
-                currentMatch = (int)(currentMatch *  AvoidRepetition(section, measureIndex, candidateChords[j]));
+                currentMatch = (int)(currentMatch * AvoidRepetition(section, measureIndex, candidateChords[j]));
                 // 현재 거가 더 잘맞으면
                 if (currentMatch >= matchestMatch)
                 {
@@ -248,8 +255,42 @@ namespace Harmonify
             {
                 root = matchestRoot,
                 chordNotes = KeySignature.GetDiatonicChordNotesFromRoot(KeySignature.tonicNote, true, matchestRoot),
-                major = true
-            }; ;
+                major = true,
+                match = matchestMatch
+            };
+        }
+
+        private Chord GetMatchingSecondaryDominant(List<Tuple<int, int>> weightedNotes)
+        {
+            List<int> nearKeys = KeySignature.GetNearKeys(3);
+            List<int> chordNotes = new List<int>();
+            int currentMatch;
+            int matchestMatch = 0;
+            int matchestRoot = 0;
+            for (int i = 0; i < nearKeys.Count; i++)
+            {
+                chordNotes.Clear();
+                chordNotes.Add((nearKeys[i] + 7) % 12); chordNotes.Add((nearKeys[i] + 11) % 12); chordNotes.Add((nearKeys[i] + 14) % 12);
+                currentMatch = 0;
+                for (int j = 0; j < weightedNotes.Count; j++)
+                {
+                    currentMatch += Chord.Match(nearKeys[i], weightedNotes[j].Item1, chordNotes) * weightedNotes[j].Item2;
+                }
+                if (currentMatch >= matchestMatch)
+                {
+                    matchestMatch = currentMatch;
+                    matchestRoot = (nearKeys[i] + 7) % 12;
+                }
+            }
+            chordNotes.Clear();
+            chordNotes.Add(matchestRoot); chordNotes.Add((matchestRoot + 4) % 12); chordNotes.Add((matchestRoot + 7) % 12);
+            return new Chord()
+            {
+                chordNotes = chordNotes,
+                major = true,
+                root = matchestRoot,
+                match = matchestMatch
+            };
         }
 
 
