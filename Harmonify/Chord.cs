@@ -15,51 +15,32 @@ namespace Harmonify
         {
             List<int> notes = new List<int>();
             notes.AddRange(chordNotes);
+            string result = null;
             if (notes.Count < 3)
             {
                 return null;
             }
-            else if (notes.Count == 3)
+            else
             {
                 List<int> possibleTriad = GetPossibleTriad(notes);
-                return Note.GetNoteName(possibleTriad[0]) + (possibleTriad[1] - possibleTriad[2] == 3 ? "m" : "");
-            }
-            else
-            {
-                // TODO :
-                return null;
-            }
-        }
-
-        public static string GetChordNotation(List<int> chordNotes)
-        {
-            string result = null;
-            if (chordNotes.Count < 3)
-            {
-                return null;
-            }
-            else
-            {
-                
-                List<int> possibleTriad = GetPossibleTriad(chordNotes);
-                result = Note.GetNoteName(possibleTriad[0]);
-                int mediantInterval = (possibleTriad[1] - possibleTriad[0]);
-                if(mediantInterval < 0)
+                int mediantInterval = possibleTriad[1] - possibleTriad[0];
+                result += Note.GetNoteName(possibleTriad[0]);
+                if (mediantInterval < 0)
                 {
                     mediantInterval += 12;
                 }
-                if(mediantInterval == 3)
+                if (mediantInterval == 3)
                 {
                     result += "m";
                 }
-                if(chordNotes.Count == 4)
+                if (chordNotes.Count == 4)
                 {
-                    int sevenInterval = possibleTriad[3] - possibleTriad[0];
-                    if(sevenInterval == 10)
+                    int sevenInterval = (possibleTriad[3] - possibleTriad[0] + 12) % 12;
+                    if (sevenInterval == 10)
                     {
                         result += "7";
                     }
-                    else if(sevenInterval == 11) 
+                    else if (sevenInterval == 11)
                     {
                         result += "M7";
                     }
@@ -68,34 +49,37 @@ namespace Harmonify
             }
         }
 
-        public static List<int> GetPossibleTriad(List<int> notes)
+        public static string GetChordNotation(List<int> chordNotes)
         {
-            if (notes.Count > 3)
+            Chord chord = new Chord()
             {
-                return null;
+                chordNotes = chordNotes,
+
+            };
+            return chord.GetChordNotation();
+        }
+
+        private static List<int> GetPossibleTriad(List<int> notes)
+        {
+            // 그자체로 Triad
+            if (IsThirdStacked(notes))
+            {
+                return notes;
             }
             else
             {
-                // 그자체로 Triad
-                if (IsThirdStacked(notes))
+                // 노트 갯수만큼 inverse 해봄
+                for (int i = 0; i < notes.Count; i++)
                 {
-                    return notes;
-                }
-                else
-                {
-                    // 두번 inverse 해봄
-                    for (int i = 0; i < 2; i++)
+                    Inverse(notes);
+                    if (IsThirdStacked(notes))
                     {
-                        Inverse(notes);
-                        if (IsThirdStacked(notes))
-                        {
-                            return notes;
-                        }
+                        return notes;
                     }
-                    // 그래도 안되면 Null.
-                    return null;
-
                 }
+                // 그래도 안되면 Null.
+                return null;
+
             }
 
         }
@@ -112,7 +96,7 @@ namespace Harmonify
             for (int i = 0; i < notes.Count - 1; i++)
             {
                 int interval = notes[i + 1] - notes[i];
-                if(interval < 0)
+                if (interval < 0)
                 {
                     interval += 12;
                 }
@@ -129,7 +113,7 @@ namespace Harmonify
             note %= 12;
             int mode = note - keySignature.TonicNote;
             int match = 0;
-            if(mode < 0)
+            if (mode < 0)
             {
                 mode += 12;
             }

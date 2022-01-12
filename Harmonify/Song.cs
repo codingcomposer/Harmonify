@@ -19,6 +19,7 @@ namespace Harmonify
         public List<Section> sections = new List<Section>();
 
         public KeySignature KeySignature { get; private set; }
+        private int spice;
 
         public Song(string path, IuiHandler _iuiHandler)
         {
@@ -86,8 +87,10 @@ namespace Harmonify
             }
         }
 
-        public void Analyze(KeySignature keySignature)
+        public void Analyze(KeySignature keySignature, int _spice)
         {
+            spice = _spice;
+            ClearChords();
             KeySignature = keySignature;
             if (targetTrackIndex != -1)
             {
@@ -105,11 +108,25 @@ namespace Harmonify
                         KeySignature = candidates[0];
                     }
                 }
-                Chordify();
+                Chordify(spice);
                 // Analyze Song forms
                 // incomplete bar check
             }
 
+        }
+
+        private void ClearChords()
+        {
+            for(int i = 0; i < sections.Count; i++)
+            {
+                for(int j = 0; j < sections[i].measures.Count; j++)
+                {
+                    for(int k = 0; k < sections[i].measures[j].chords.Count; k++)
+                    {
+                        sections[i].measures[j].chords.Clear();
+                    }
+                }
+            }
         }
 
         private Section GetFirstNonEmptySection()
@@ -124,8 +141,9 @@ namespace Harmonify
             return null;
         }
 
-        private void Chordify()
+        private void Chordify(int spice)
         {
+            int chordNoteCount = spice > 0 ? 4 : 3;
             int[] keyNotes = KeySignature.GetKeyNotes(KeySignature);
             List<int> primaryTriads = new List<int>();
             primaryTriads.Add(keyNotes[0]);
@@ -134,7 +152,7 @@ namespace Harmonify
             primaryTriads.Add(keyNotes[3]);
             primaryTriads.Add(keyNotes[4]);
             primaryTriads.Add(keyNotes[5]);
-            PreliminaryPass(keyNotes);
+            PreliminaryPass(keyNotes, chordNoteCount);
             for (int i = 0; i < sections.Count; i++)
             {
                 if (sections[i].measures[0].notes.Count > 0)
@@ -157,7 +175,7 @@ namespace Harmonify
                                     candidateChords.Add(primaryTriads[k]);
                                 }
                             }
-                            sections[i].measures[j].chords.Add(GetMatchingChord(candidateChords, sections[i].measures[j].GetWeightedNotes(), sections[i], j));
+                            sections[i].measures[j].chords.Add(GetMatchingChord(candidateChords, sections[i].measures[j].GetWeightedNotes(), sections[i], j, chordNoteCount));
                         }
                     }
                 }
@@ -166,7 +184,7 @@ namespace Harmonify
         }
 
         // 첫 패스 전에 해야 할 것 : 첫코드, 마지막 코드 작성.
-        private void PreliminaryPass(int[] keyNotes)
+        private void PreliminaryPass(int[] keyNotes, int chordNoteCount)
         {
             for (int i = 0; i < sections.Count; i++)
             {
@@ -179,19 +197,19 @@ namespace Harmonify
                     List<int> oneFour = new List<int>();
                     oneFour.Add(keyNotes[0]);
                     oneFour.Add(keyNotes[3]);
-                    sections[i].measures[0].chords.Add(GetMatchingChord(oneFour, sections[i].measures[0].GetWeightedNotes(), sections[i], 0));
+                    sections[i].measures[0].chords.Add(GetMatchingChord(oneFour, sections[i].measures[0].GetWeightedNotes(), sections[i], 0, chordNoteCount));
 
                     // 마지막 코드 작성 : 무조건 1도
                     List<int> one = new List<int>();
                     one.Add(keyNotes[0]);
                     int lastMeasureIndex = sections[i].measures.Count - 1;
-                    sections[i].measures[lastMeasureIndex].chords.Add(GetMatchingChord(one, sections[i].measures[lastMeasureIndex].GetWeightedNotes(), sections[i], lastMeasureIndex));
+                    sections[i].measures[lastMeasureIndex].chords.Add(GetMatchingChord(one, sections[i].measures[lastMeasureIndex].GetWeightedNotes(), sections[i], lastMeasureIndex, chordNoteCount));
 
                     // 마지막에서 두번째 코드 : 4, 5도
                     List<int> fourFive = new List<int>();
                     fourFive.Add(keyNotes[3]);
                     fourFive.Add(keyNotes[4]);
-                    sections[i].measures[lastMeasureIndex - 1].chords.Add(GetMatchingChord(fourFive, sections[i].measures[lastMeasureIndex - 1].GetWeightedNotes(), sections[i], lastMeasureIndex - 1));
+                    sections[i].measures[lastMeasureIndex - 1].chords.Add(GetMatchingChord(fourFive, sections[i].measures[lastMeasureIndex - 1].GetWeightedNotes(), sections[i], lastMeasureIndex - 1, chordNoteCount));
                     
                     // secondary dominanant 필수 : D, E (한단계), A, B (두단계)
                     List<int> diatonics = new List<int>();
@@ -202,7 +220,7 @@ namespace Harmonify
                         if (!KeySignature.IsDiatonic(sections[i].measures[j].notes))
                         {
                             List<Tuple<int, int>> weightedNotes = sections[i].measures[j].GetWeightedNotes();
-                            Chord matchestDiatonic = GetMatchingChord(diatonics, weightedNotes, sections[i], j);
+                            Chord matchestDiatonic = GetMatchingChord(diatonics, weightedNotes, sections[i], j, chordNoteCount);
                             Chord matchestSecondaryDominant = GetMatchingSecondaryDominant(weightedNotes);
                             sections[i].measures[j].chords.Add(matchestSecondaryDominant);
                             /*
@@ -234,34 +252,34 @@ namespace Harmonify
             return coefficient;
         }
 
-        private Chord GetMatchingChord(List<int> candidateChords, List<Tuple<int, int>> weightedNotes, Section section, int measureIndex)
+        private Chord GetMatchingChord(List<int> candidateChordRoots, List<Tuple<int, int>> weightedNotes, Section section, int measureIndex, int chordNoteCount)
         {
             int matchestRoot = 0;
             int matchestMatch = 0;
             int currentMatch;
-            for (int j = 0; j < candidateChords.Count; j++)
+            for (int j = 0; j < candidateChordRoots.Count; j++)
             {
                 currentMatch = 0;
                 for (int k = 0; k < weightedNotes.Count; k++)
                 {
-                    List<int> chordNotes = KeySignature.GetDiatonicChordNotesFromRoot(KeySignature, candidateChords[j]);
+                    List<int> chordNotes = KeySignature.GetDiatonicChordNotesFromRoot(KeySignature, candidateChordRoots[j], chordNoteCount);
                     if (chordNotes != null && chordNotes.Count > 1)
                     {
                         currentMatch += Chord.Match(KeySignature, weightedNotes[k].Item1, chordNotes) * weightedNotes[k].Item2;
                     }
                 }
-                currentMatch = (int)(currentMatch * AvoidRepetition(section, measureIndex, candidateChords[j]));
+                currentMatch = (int)(currentMatch * AvoidRepetition(section, measureIndex, candidateChordRoots[j]));
                 // 현재 거가 더 잘맞으면
                 if (currentMatch >= matchestMatch)
                 {
-                    matchestRoot = candidateChords[j];
+                    matchestRoot = candidateChordRoots[j];
                     matchestMatch = currentMatch;
                 }
             }
             return new Chord
             {
                 root = matchestRoot,
-                chordNotes = KeySignature.GetDiatonicChordNotesFromRoot(KeySignature, matchestRoot),
+                chordNotes = KeySignature.GetDiatonicChordNotesFromRoot(KeySignature, matchestRoot, chordNoteCount),
                 major = true,
                 match = matchestMatch
             };
@@ -269,7 +287,7 @@ namespace Harmonify
 
         private Chord GetMatchingSecondaryDominant(List<Tuple<int, int>> weightedNotes)
         {
-            List<KeySignature> nearKeys = KeySignature.GetNearKeys(3);
+            List<KeySignature> nearKeys = KeySignature.GetNearKeys(2);
             List<int> chordNotes = new List<int>();
             int currentMatch;
             int matchestMatch = 0;
@@ -277,7 +295,12 @@ namespace Harmonify
             for (int i = 0; i < nearKeys.Count; i++)
             {
                 chordNotes.Clear();
-                chordNotes.Add((nearKeys[i].TonicNote + 7) % 12); chordNotes.Add((nearKeys[i].TonicNote + 11) % 12); chordNotes.Add((nearKeys[i].TonicNote + 14) % 12);
+                chordNotes.Add((nearKeys[i].TonicNote + 7) % 12); chordNotes.Add((nearKeys[i].TonicNote + 11) % 12); chordNotes.Add((nearKeys[i].TonicNote + 2) % 12);
+                if(spice > 0)
+                {
+                    chordNotes.Add((nearKeys[i].TonicNote + 5) % 12);
+                }
+                MessageBox.Show(Chord.GetChordNotation(chordNotes));
                 currentMatch = 0;
                 for (int j = 0; j < weightedNotes.Count; j++)
                 {

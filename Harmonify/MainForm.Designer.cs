@@ -33,17 +33,19 @@ namespace Harmonify
             this.textBox1 = new System.Windows.Forms.TextBox();
             this.ImportFileButton = new System.Windows.Forms.Button();
             this.button1 = new System.Windows.Forms.Button();
-            this.comboBox1 = new System.Windows.Forms.ComboBox();
-            this.comboBox2 = new System.Windows.Forms.ComboBox();
+            this.KeyRootComboBox = new System.Windows.Forms.ComboBox();
+            this.KeyMajorityComboBox = new System.Windows.Forms.ComboBox();
             this.button2 = new System.Windows.Forms.Button();
-            this.label1 = new System.Windows.Forms.Label();
-            this.assumedKeysLabel = new System.Windows.Forms.Label();
+            this.KeyLabel = new System.Windows.Forms.Label();
+            this.SpiceTrackBar = new System.Windows.Forms.TrackBar();
+            this.AssumeKeysButton = new System.Windows.Forms.Button();
+            ((System.ComponentModel.ISupportInitialize)(this.SpiceTrackBar)).BeginInit();
             this.SuspendLayout();
             // 
             // MidiFileNameLabel
             // 
             this.MidiFileNameLabel.AutoSize = true;
-            this.MidiFileNameLabel.Location = new System.Drawing.Point(201, 38);
+            this.MidiFileNameLabel.Location = new System.Drawing.Point(90, 13);
             this.MidiFileNameLabel.Name = "MidiFileNameLabel";
             this.MidiFileNameLabel.Size = new System.Drawing.Size(174, 15);
             this.MidiFileNameLabel.TabIndex = 0;
@@ -51,7 +53,7 @@ namespace Harmonify
             // 
             // textBox1
             // 
-            this.textBox1.Location = new System.Drawing.Point(86, 136);
+            this.textBox1.Location = new System.Drawing.Point(12, 162);
             this.textBox1.Multiline = true;
             this.textBox1.Name = "textBox1";
             this.textBox1.Size = new System.Drawing.Size(389, 223);
@@ -59,7 +61,7 @@ namespace Harmonify
             // 
             // ImportFileButton
             // 
-            this.ImportFileButton.Location = new System.Drawing.Point(400, 34);
+            this.ImportFileButton.Location = new System.Drawing.Point(327, 9);
             this.ImportFileButton.Name = "ImportFileButton";
             this.ImportFileButton.Size = new System.Drawing.Size(75, 23);
             this.ImportFileButton.TabIndex = 2;
@@ -70,7 +72,7 @@ namespace Harmonify
             // button1
             // 
             this.button1.Cursor = System.Windows.Forms.Cursors.Default;
-            this.button1.Location = new System.Drawing.Point(400, 390);
+            this.button1.Location = new System.Drawing.Point(437, 362);
             this.button1.Name = "button1";
             this.button1.Size = new System.Drawing.Size(75, 23);
             this.button1.TabIndex = 3;
@@ -78,10 +80,10 @@ namespace Harmonify
             this.button1.UseVisualStyleBackColor = true;
             this.button1.Click += new System.EventHandler(this.button1_Click);
             // 
-            // comboBox1
+            // KeyRootComboBox
             // 
-            this.comboBox1.FormattingEnabled = true;
-            this.comboBox1.Items.AddRange(new object[] {
+            this.KeyRootComboBox.FormattingEnabled = true;
+            this.KeyRootComboBox.Items.AddRange(new object[] {
             "모름",
             "C",
             "C#/Db",
@@ -95,28 +97,28 @@ namespace Harmonify
             "A",
             "A#/Bb",
             "B"});
-            this.comboBox1.Location = new System.Drawing.Point(117, 89);
-            this.comboBox1.Name = "comboBox1";
-            this.comboBox1.Size = new System.Drawing.Size(55, 23);
-            this.comboBox1.TabIndex = 4;
-            this.comboBox1.SelectedIndexChanged += new System.EventHandler(this.comboBox1_SelectedIndexChanged);
+            this.KeyRootComboBox.Location = new System.Drawing.Point(136, 60);
+            this.KeyRootComboBox.Name = "KeyRootComboBox";
+            this.KeyRootComboBox.Size = new System.Drawing.Size(55, 23);
+            this.KeyRootComboBox.TabIndex = 4;
+            this.KeyRootComboBox.SelectedIndexChanged += new System.EventHandler(this.KeyRootComboBox_SelectedIndexChanged);
             // 
-            // comboBox2
+            // KeyMajorityComboBox
             // 
-            this.comboBox2.FormattingEnabled = true;
-            this.comboBox2.Items.AddRange(new object[] {
+            this.KeyMajorityComboBox.FormattingEnabled = true;
+            this.KeyMajorityComboBox.Items.AddRange(new object[] {
             "모름",
             "Major",
             "Minor"});
-            this.comboBox2.Location = new System.Drawing.Point(178, 89);
-            this.comboBox2.Name = "comboBox2";
-            this.comboBox2.Size = new System.Drawing.Size(105, 23);
-            this.comboBox2.TabIndex = 5;
-            this.comboBox2.SelectedIndexChanged += new System.EventHandler(this.comboBox2_SelectedIndexChanged);
+            this.KeyMajorityComboBox.Location = new System.Drawing.Point(197, 60);
+            this.KeyMajorityComboBox.Name = "KeyMajorityComboBox";
+            this.KeyMajorityComboBox.Size = new System.Drawing.Size(105, 23);
+            this.KeyMajorityComboBox.TabIndex = 5;
+            this.KeyMajorityComboBox.SelectedIndexChanged += new System.EventHandler(this.MajorityComboBox_SelectedIndexChanged);
             // 
             // button2
             // 
-            this.button2.Location = new System.Drawing.Point(400, 88);
+            this.button2.Location = new System.Drawing.Point(327, 111);
             this.button2.Name = "button2";
             this.button2.Size = new System.Drawing.Size(75, 23);
             this.button2.TabIndex = 6;
@@ -124,33 +126,45 @@ namespace Harmonify
             this.button2.UseVisualStyleBackColor = true;
             this.button2.Click += new System.EventHandler(this.button2_Click);
             // 
-            // label1
+            // KeyLabel
             // 
-            this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(85, 92);
-            this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(26, 15);
-            this.label1.TabIndex = 7;
-            this.label1.Text = "Key";
+            this.KeyLabel.AutoSize = true;
+            this.KeyLabel.Location = new System.Drawing.Point(90, 63);
+            this.KeyLabel.Name = "KeyLabel";
+            this.KeyLabel.Size = new System.Drawing.Size(26, 15);
+            this.KeyLabel.TabIndex = 7;
+            this.KeyLabel.Text = "Key";
+            this.KeyLabel.Click += new System.EventHandler(this.KeyLabel_Click);
             // 
-            // assumedKeysLabel
+            // SpiceTrackBar
             // 
-            this.assumedKeysLabel.AutoSize = true;
-            this.assumedKeysLabel.Location = new System.Drawing.Point(298, 92);
-            this.assumedKeysLabel.Name = "assumedKeysLabel";
-            this.assumedKeysLabel.Size = new System.Drawing.Size(0, 15);
-            this.assumedKeysLabel.TabIndex = 8;
+            this.SpiceTrackBar.Location = new System.Drawing.Point(128, 111);
+            this.SpiceTrackBar.Name = "SpiceTrackBar";
+            this.SpiceTrackBar.Size = new System.Drawing.Size(104, 45);
+            this.SpiceTrackBar.TabIndex = 9;
+            this.SpiceTrackBar.Scroll += new System.EventHandler(this.SpiceTrackBar_Scroll);
+            // 
+            // AssumeKeysButton
+            // 
+            this.AssumeKeysButton.Location = new System.Drawing.Point(327, 60);
+            this.AssumeKeysButton.Name = "AssumeKeysButton";
+            this.AssumeKeysButton.Size = new System.Drawing.Size(75, 23);
+            this.AssumeKeysButton.TabIndex = 10;
+            this.AssumeKeysButton.Text = "Guess";
+            this.AssumeKeysButton.UseVisualStyleBackColor = true;
+            this.AssumeKeysButton.Click += new System.EventHandler(this.AssumeKeysButton_Click);
             // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(800, 450);
-            this.Controls.Add(this.assumedKeysLabel);
-            this.Controls.Add(this.label1);
+            this.ClientSize = new System.Drawing.Size(525, 402);
+            this.Controls.Add(this.AssumeKeysButton);
+            this.Controls.Add(this.SpiceTrackBar);
+            this.Controls.Add(this.KeyLabel);
             this.Controls.Add(this.button2);
-            this.Controls.Add(this.comboBox2);
-            this.Controls.Add(this.comboBox1);
+            this.Controls.Add(this.KeyMajorityComboBox);
+            this.Controls.Add(this.KeyRootComboBox);
             this.Controls.Add(this.button1);
             this.Controls.Add(this.ImportFileButton);
             this.Controls.Add(this.textBox1);
@@ -158,6 +172,7 @@ namespace Harmonify
             this.Name = "MainForm";
             this.Text = "MainForm";
             this.Load += new System.EventHandler(this.MainForm_Load);
+            ((System.ComponentModel.ISupportInitialize)(this.SpiceTrackBar)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -169,10 +184,11 @@ namespace Harmonify
         private System.Windows.Forms.TextBox textBox1;
         private System.Windows.Forms.Button ImportFileButton;
         private System.Windows.Forms.Button button1;
-        private System.Windows.Forms.ComboBox comboBox1;
-        private System.Windows.Forms.ComboBox comboBox2;
+        private System.Windows.Forms.ComboBox KeyRootComboBox;
+        private System.Windows.Forms.ComboBox KeyMajorityComboBox;
         private System.Windows.Forms.Button button2;
-        private System.Windows.Forms.Label label1;
-        private System.Windows.Forms.Label assumedKeysLabel;
+        private System.Windows.Forms.Label KeyLabel;
+        private System.Windows.Forms.TrackBar SpiceTrackBar;
+        private System.Windows.Forms.Button AssumeKeysButton;
     }
 }

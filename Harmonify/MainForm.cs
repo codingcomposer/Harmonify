@@ -10,31 +10,23 @@ namespace Harmonify
 {
     public partial class MainForm : Form, IuiHandler
     {
-        public Song song;
+        private Song song;
         public string midiFilePath;
+        private int spice;
         public MainForm()
         {
             InitializeComponent();
-            comboBox1.SelectedIndex = 0;
-            comboBox2.SelectedIndex = 0;
+            KeyRootComboBox.SelectedIndex = 0;
+            KeyMajorityComboBox.SelectedIndex = 0;
         }
 
         private void ImportFileButton_Click(object sender, EventArgs e)
         {
+            song = null;
             midiFilePath = ShowFileOpenDialog();
             if (midiFilePath != null)
             {
                 song = new Song(midiFilePath, this);
-                List<KeySignature> assumedKeys = song.AssumeKeys();
-                if(assumedKeys != null)
-                {
-                    string keySentence = "예상 키 : ";
-                    for(int i = 0; i < assumedKeys.Count; i++)
-                    {
-                        keySentence += Note.GetNoteName(assumedKeys[i].TonicNote) + assumedKeys[i].majority.ToString();
-                    }
-                    assumedKeysLabel.Text = keySentence;
-                }
             }
             else
             {
@@ -91,9 +83,6 @@ namespace Harmonify
             song.SetTrackIndex(index);
         }
 
-        private void MakeChordsButton_Click(object sender, EventArgs e)
-        {
-        }
 
         private void MainForm_Load(object sender, EventArgs e)
         {
@@ -113,13 +102,13 @@ namespace Harmonify
             }
             if (Song.MidiFile != null)
             {
-                if (comboBox1.SelectedIndex == 0)
+                if (KeyRootComboBox.SelectedIndex == 0)
                 {
-                    song.Analyze(null);
+                    song.Analyze(null, spice);
                 }
                 else
                 {
-                    song.Analyze(new KeySignature(comboBox1.SelectedIndex - 1, comboBox2.SelectedIndex == 1 ? KeySignature.Majority.major : KeySignature.Majority.harmonicMinor));
+                    song.Analyze(new KeySignature(KeyRootComboBox.SelectedIndex - 1, KeyMajorityComboBox.SelectedIndex == 1 ? KeySignature.Majority.major : KeySignature.Majority.harmonicMinor), spice);
                 }
             }
             textBox1.Text = null;
@@ -142,7 +131,13 @@ namespace Harmonify
                     {
                         if (song.sections[i].measures[j].chords[k].chordNotes.Count > 0)
                         {
-                            textBox1.Text += Chord.GetChordNotation(song.sections[i].measures[j].chords[k].chordNotes);
+                            textBox1.Text += song.sections[i].measures[j].chords[k].GetChordNotation();//.GetChordNotation(song.sections[i].measures[j].chords[k].chordNotes);
+                            textBox1.Text += "(";
+                            for(int m = 0;m < song.sections[i].measures[j].chords[k].chordNotes.Count; m++)
+                            {
+                                textBox1.Text += Note.GetNoteName(song.sections[i].measures[j].chords[k].chordNotes[m]);
+                            }
+                            textBox1.Text += ")";
                         }
                     }
                     textBox1.Text += "|";
@@ -153,15 +148,38 @@ namespace Harmonify
                 }
             }
         }
-        private void comboBox1_SelectedIndexChanged(object sender, EventArgs e)
+        private void KeyRootComboBox_SelectedIndexChanged(object sender, EventArgs e)
         {
 
         }
 
-        private void comboBox2_SelectedIndexChanged(object sender, EventArgs e)
+        private void MajorityComboBox_SelectedIndexChanged(object sender, EventArgs e)
         {
 
         }
 
+        private void AssumeKeysButton_Click(object sender, EventArgs e)
+        {
+            List<KeySignature> assumedKeys = song.AssumeKeys();
+            if (assumedKeys != null)
+            {
+                string keySentence = "예상 키 : ";
+                for (int i = 0; i < assumedKeys.Count; i++)
+                {
+                    keySentence += Note.GetNoteName(assumedKeys[i].TonicNote) + assumedKeys[i].majority.ToString();
+                }
+                MessageBox.Show(keySentence);
+            }
+        }
+
+        private void SpiceTrackBar_Scroll(object sender, EventArgs e)
+        {
+            spice = SpiceTrackBar.Value;
+        }
+
+        private void KeyLabel_Click(object sender, EventArgs e)
+        {
+
+        }
     }
 }

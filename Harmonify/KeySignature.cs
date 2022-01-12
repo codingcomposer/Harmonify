@@ -69,11 +69,11 @@ namespace Harmonify
             int flatRoot = tonicNote;
             if (majority == Majority.major)
             {
-                nearKeys.Add(new KeySignature(sharpRoot - 4, Majority.major));
+                nearKeys.Add(new KeySignature((sharpRoot + 8) % 12, Majority.major));
             }
             else
             {
-                nearKeys.Add(new KeySignature(sharpRoot + 3, Majority.harmonicMinor));
+                nearKeys.Add(new KeySignature((sharpRoot + 3) % 12, Majority.harmonicMinor));
             }
             // C G D A E B F#
             while (sharpDistance < distance)
@@ -82,11 +82,11 @@ namespace Harmonify
                 nearKeys.Add(new KeySignature(sharpRoot, majority));
                 if (majority == Majority.major)
                 {
-                    nearKeys.Add(new KeySignature(sharpRoot - 4, Majority.harmonicMinor));
+                    nearKeys.Add(new KeySignature((sharpRoot + 8) % 12, Majority.harmonicMinor));
                 }
                 else
                 {
-                    nearKeys.Add(new KeySignature(sharpRoot + 3, Majority.major));
+                    nearKeys.Add(new KeySignature((sharpRoot + 3) % 12, Majority.major));
                 }
                 sharpDistance++;
             }
@@ -97,13 +97,17 @@ namespace Harmonify
                 nearKeys.Add(new KeySignature(flatRoot, Majority.major));
                 if (majority == Majority.major)
                 {
-                    nearKeys.Add(new KeySignature(flatRoot - 4, Majority.harmonicMinor));
+                    nearKeys.Add(new KeySignature((flatRoot + 4) % 12, Majority.harmonicMinor));
                 }
                 else
                 {
-                    nearKeys.Add(new KeySignature(flatRoot + 3, Majority.major));
+                    nearKeys.Add(new KeySignature((flatRoot + 3) % 12, Majority.major));
                 }
                 flatDistance++;
+            }
+            for (int i = 0; i < nearKeys.Count; i++)
+            {
+                System.Windows.Forms.MessageBox.Show(Note.GetNoteName(nearKeys[i].TonicNote) + "," + nearKeys[i].majority);
             }
             return nearKeys;
         }
@@ -156,7 +160,7 @@ namespace Harmonify
             for (int i = 0; i < assumedKeys.Count; i++)
             {
                 //i번째 키 기준으로 마지막 노트에서 뽑아낼 수 있는 다이어토닉코드들을 찾아서
-                List<int> diatonicChordRoots = GetPossibleDiatonicChordRoots(assumedKeys[i], lastNote);
+                List<int> diatonicChordRoots = GetPossibleDiatonicChordRoots(assumedKeys[i], lastNote, 3);
                 if (diatonicChordRoots.Count > 0)
                 {
                     for (int j = 0; j < diatonicChordRoots.Count; j++)
@@ -211,7 +215,7 @@ namespace Harmonify
         }
 
         // 해당 키에서 note를 포함한 diatonic chord들의 root를 반환한다.
-        private static List<int> GetPossibleDiatonicChordRoots(KeySignature keySignature, int note)
+        private static List<int> GetPossibleDiatonicChordRoots(KeySignature keySignature, int note, int noteCount)
         {
             List<int> result = new List<int>();
             note %= 12;
@@ -230,7 +234,7 @@ namespace Harmonify
                 {
                     
                     // 그 음에서 쌓아올린 다이어토닉 코드에 노트가 포함되어 있다면
-                    if(GetDiatonicChordNotesFromRoot(keySignature, keyNotes[i]).Contains(note))
+                    if(GetDiatonicChordNotesFromRoot(keySignature, keyNotes[i], noteCount).Contains(note))
                     {
                         // 그 음을 추가.
                         result.Add(keyNotes[i]);
@@ -266,7 +270,7 @@ namespace Harmonify
 
 
         // 키에서 해당 노트를 루트로 하는 코드의 구성음을 가져온다.
-        public static List<int> GetDiatonicChordNotesFromRoot(KeySignature keySignature, int chordRoot)
+        public static List<int> GetDiatonicChordNotesFromRoot(KeySignature keySignature, int chordRoot, int noteCount)
         {
             List<int> result = new List<int>();
             int[] keyNotes = GetKeyNotes(keySignature);
@@ -278,14 +282,12 @@ namespace Harmonify
             }
             else
             {
-
-                for (int i = 0; i < 3; i++)
+                for (int i = 0; i < noteCount; i++)
                 {
                     result.Add(keyNotes[(chordRootIndex + 2 * i) % 7]);
                 }
             }
             return result;
-
         }
 
         private static int[] GetMajorityNotes(Majority majority)
