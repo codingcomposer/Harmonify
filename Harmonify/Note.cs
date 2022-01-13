@@ -11,7 +11,7 @@ namespace Harmonify
         public int offTime;
         public int length;
         public string noteName;
-        private enum eNoteName { C, Csharp, D, Dsharp, E, F, Fsharp, G, Gsharp, A, Asharp, B };
+        public enum eNoteName { C, Csharp, D, Dsharp, E, F, Fsharp, G, Gsharp, A, Asharp, B };
 
         public Note(int _noteNumber, int _onTime, int _offTime)
         {

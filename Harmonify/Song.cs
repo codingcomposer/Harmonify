@@ -213,22 +213,17 @@ namespace Harmonify
                     
                     // secondary dominanant 필수 : D, E (한단계), A, B (두단계)
                     List<int> diatonics = new List<int>();
-                    diatonics.Add(keyNotes[0]); diatonics.Add(keyNotes[1]); diatonics.Add(keyNotes[2]); diatonics.Add(keyNotes[3]); diatonics.Add(keyNotes[4]); diatonics.Add(keyNotes[5]);
-
+                    for(int j = 0; j < 5; j++)
+                    {
+                        diatonics.Add(keyNotes[j]);
+                    }
                     for (int j = 0; j < sections[i].measures.Count; j++)
                     {
                         if (!KeySignature.IsDiatonic(sections[i].measures[j].notes))
                         {
                             List<Tuple<int, int>> weightedNotes = sections[i].measures[j].GetWeightedNotes();
-                            Chord matchestDiatonic = GetMatchingChord(diatonics, weightedNotes, sections[i], j, chordNoteCount);
                             Chord matchestSecondaryDominant = GetMatchingSecondaryDominant(weightedNotes);
                             sections[i].measures[j].chords.Add(matchestSecondaryDominant);
-                            /*
-                            if(matchestDiatonic.match < matchestSecondaryDominant.match)
-                            {
-                                sections[i].measures[j].chords.Add(matchestSecondaryDominant);
-                            }
-                            */
                         }
                     }
 
@@ -252,6 +247,18 @@ namespace Harmonify
             return coefficient;
         }
 
+        private float IncentivizePrimaryChords(KeySignature key, int chordRoot)
+        {
+            if(key.TonicNote == chordRoot || key.TonicNote + (int)Note.eNoteName.F == chordRoot || key.TonicNote + (int)Note.eNoteName.G == chordRoot)
+            {
+                return 1.05f;
+            }
+            else
+            {
+                return 1f;
+            }
+        }
+
         private Chord GetMatchingChord(List<int> candidateChordRoots, List<Tuple<int, int>> weightedNotes, Section section, int measureIndex, int chordNoteCount)
         {
             int matchestRoot = 0;
@@ -269,6 +276,7 @@ namespace Harmonify
                     }
                 }
                 currentMatch = (int)(currentMatch * AvoidRepetition(section, measureIndex, candidateChordRoots[j]));
+                currentMatch = (int)(currentMatch * IncentivizePrimaryChords(KeySignature, candidateChordRoots[j]));
                 // 현재 거가 더 잘맞으면
                 if (currentMatch >= matchestMatch)
                 {
@@ -287,38 +295,36 @@ namespace Harmonify
 
         private Chord GetMatchingSecondaryDominant(List<Tuple<int, int>> weightedNotes)
         {
-            List<KeySignature> nearKeys = KeySignature.GetNearKeys(2);
+            List<KeySignature> nearKeys = KeySignature.GetNearKeys(1);
             List<int> chordNotes = new List<int>();
             int currentMatch;
-            int matchestMatch = 0;
-            int matchestRoot = 0;
+            int matchestMatch = int.MinValue;
+            KeySignature matchestKey = null;
             for (int i = 0; i < nearKeys.Count; i++)
             {
                 chordNotes.Clear();
-                chordNotes.Add((nearKeys[i].TonicNote + 7) % 12); chordNotes.Add((nearKeys[i].TonicNote + 11) % 12); chordNotes.Add((nearKeys[i].TonicNote + 2) % 12);
-                if(spice > 0)
-                {
-                    chordNotes.Add((nearKeys[i].TonicNote + 5) % 12);
-                }
-                MessageBox.Show(Chord.GetChordNotation(chordNotes));
+                chordNotes = KeySignature.GetDominant(nearKeys[i], 4);
                 currentMatch = 0;
                 for (int j = 0; j < weightedNotes.Count; j++)
                 {
                     currentMatch += Chord.Match(nearKeys[i], weightedNotes[j].Item1, chordNotes) * weightedNotes[j].Item2;
                 }
+                // 나란한조의 경우 인센티브 줌.
+                currentMatch = (int)(currentMatch * (KeySignature.AreRelativeKeys(KeySignature, nearKeys[i]) ? 1.5f : 1f));
                 if (currentMatch >= matchestMatch)
                 {
                     matchestMatch = currentMatch;
-                    matchestRoot = (nearKeys[i].TonicNote + 7) % 12;
+                    matchestKey = nearKeys[i];
+                    
                 }
             }
             chordNotes.Clear();
-            chordNotes.Add(matchestRoot); chordNotes.Add((matchestRoot + 4) % 12); chordNotes.Add((matchestRoot + 7) % 12);
+            chordNotes = KeySignature.GetDominant(matchestKey, 4);
             return new Chord()
             {
                 chordNotes = chordNotes,
                 major = true,
-                root = matchestRoot,
+                root = (matchestKey.TonicNote + 7) % 12,
                 match = matchestMatch
             };
         }

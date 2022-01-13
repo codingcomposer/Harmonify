@@ -131,13 +131,7 @@ namespace Harmonify
                     {
                         if (song.sections[i].measures[j].chords[k].chordNotes.Count > 0)
                         {
-                            textBox1.Text += song.sections[i].measures[j].chords[k].GetChordNotation();//.GetChordNotation(song.sections[i].measures[j].chords[k].chordNotes);
-                            textBox1.Text += "(";
-                            for(int m = 0;m < song.sections[i].measures[j].chords[k].chordNotes.Count; m++)
-                            {
-                                textBox1.Text += Note.GetNoteName(song.sections[i].measures[j].chords[k].chordNotes[m]);
-                            }
-                            textBox1.Text += ")";
+                            textBox1.Text += song.sections[i].measures[j].chords[k].GetChordNotation();
                         }
                     }
                     textBox1.Text += "|";

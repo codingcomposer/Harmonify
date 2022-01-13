@@ -9,11 +9,12 @@ namespace Harmonify
     {
         public int TonicNote { get { return tonicNote; } }
         private int tonicNote;
-        public enum Majority { major, naturalMinor, harmonicMinor}
+        public enum Majority { major, naturalMinor, harmonicMinor, melodicMinor }
         public Majority majority;
         private static readonly int[] majorNotes = new int[7] { 0, 2, 4, 5, 7, 9, 11 };
         private static readonly int[] naturalMinorNotes = new int[7] { 0, 2, 3, 5, 7, 8, 10 };
         private static readonly int[] harmonicMinorNotes = new int[7] { 0, 2, 3, 5, 7, 8, 11 };
+        private static readonly int[] melodicMinorNotes = new int[7] { 0, 2, 3, 5, 7, 9, 1 };
 
         public KeySignature(int _tonicNote, Majority _majority)
         {
@@ -28,7 +29,7 @@ namespace Harmonify
         private static void Log(List<int> ints)
         {
             string str = null;
-            for(int i = 0; i < ints.Count; i++)
+            for (int i = 0; i < ints.Count; i++)
             {
                 str += ints[i];
             }
@@ -41,18 +42,18 @@ namespace Harmonify
             int flatDistance = 0;
             int sharpRoot = tonicNote;
             int flatRoot = tonicNote;
-            if(tonicNote == to)
+            if (tonicNote == to)
             {
                 return 0;
             }
             // C G D A E B F#
-            while(sharpDistance < 7 && to != sharpRoot)
+            while (sharpDistance < 7 && to != sharpRoot)
             {
                 sharpRoot = ((sharpRoot + 7) % 12);
                 sharpDistance++;
             }
             // C F Bb Eb Ab Db Gb
-            while(flatDistance < 7 && to != flatRoot)
+            while (flatDistance < 7 && to != flatRoot)
             {
                 flatRoot = (flatRoot + 5) % 12;
                 flatDistance++;
@@ -67,26 +68,17 @@ namespace Harmonify
             int flatDistance = 0;
             int sharpRoot = tonicNote;
             int flatRoot = tonicNote;
-            if (majority == Majority.major)
-            {
-                nearKeys.Add(new KeySignature((sharpRoot + 8) % 12, Majority.major));
-            }
-            else
-            {
-                nearKeys.Add(new KeySignature((sharpRoot + 3) % 12, Majority.harmonicMinor));
-            }
+            nearKeys.AddRange(GetRelativeKeys(this));
             // C G D A E B F#
             while (sharpDistance < distance)
             {
                 sharpRoot = ((sharpRoot + 7) % 12);
-                nearKeys.Add(new KeySignature(sharpRoot, majority));
-                if (majority == Majority.major)
+                KeySignature nearKey = new KeySignature(sharpRoot, majority);
+                nearKeys.Add(nearKey);
+
+                if (sharpDistance < distance - 1)
                 {
-                    nearKeys.Add(new KeySignature((sharpRoot + 8) % 12, Majority.harmonicMinor));
-                }
-                else
-                {
-                    nearKeys.Add(new KeySignature((sharpRoot + 3) % 12, Majority.major));
+                    nearKeys.AddRange(GetRelativeKeys(nearKey));
                 }
                 sharpDistance++;
             }
@@ -94,22 +86,72 @@ namespace Harmonify
             while (flatDistance < distance)
             {
                 flatRoot = (flatRoot + 5) % 12;
-                nearKeys.Add(new KeySignature(flatRoot, Majority.major));
-                if (majority == Majority.major)
+                KeySignature nearKey = new KeySignature(flatRoot, majority);
+                nearKeys.Add(nearKey);
+                if (sharpDistance < distance - 1)
                 {
-                    nearKeys.Add(new KeySignature((flatRoot + 4) % 12, Majority.harmonicMinor));
-                }
-                else
-                {
-                    nearKeys.Add(new KeySignature((flatRoot + 3) % 12, Majority.major));
+                    nearKeys.AddRange(GetRelativeKeys(nearKey));
                 }
                 flatDistance++;
             }
-            for (int i = 0; i < nearKeys.Count; i++)
-            {
-                System.Windows.Forms.MessageBox.Show(Note.GetNoteName(nearKeys[i].TonicNote) + "," + nearKeys[i].majority);
-            }
             return nearKeys;
+        }
+
+        public static bool IsMinor(Majority majority)
+        {
+            return majority == Majority.naturalMinor || majority == Majority.harmonicMinor || majority == Majority.melodicMinor;
+        }
+
+        public static List<int> GetDominant(KeySignature key, int noteCount)
+        {
+            List<int> chordNotes = new List<int>();
+            int[] keyNotes = GetKeyNotes(key);
+            for (int i = 0; i < noteCount; i++)
+            {
+                chordNotes.Add(keyNotes[(4 + i * 2) % 7]);
+            }
+            return chordNotes;
+        }
+
+        private List<KeySignature> GetRelativeKeys(KeySignature originalKey)
+        {
+            List<KeySignature> relativeKeys = new List<KeySignature>();
+            if (majority == Majority.major)
+            {
+                relativeKeys.Add(new KeySignature((originalKey.tonicNote + 9) % 12, Majority.harmonicMinor));
+                relativeKeys.Add(new KeySignature((originalKey.tonicNote + 9) % 12, Majority.melodicMinor));
+            }
+            else
+            {
+                relativeKeys.Add(new KeySignature((originalKey.tonicNote + 3) % 12, Majority.major));
+                if(originalKey.majority != Majority.harmonicMinor)
+                {
+                    relativeKeys.Add(new KeySignature(originalKey.tonicNote, Majority.harmonicMinor));
+                }
+                if(originalKey.majority != Majority.melodicMinor)
+                {
+                    relativeKeys.Add(new KeySignature(originalKey.tonicNote, Majority.melodicMinor));
+                }
+            }
+            return relativeKeys;
+        }
+
+        public static bool AreRelativeKeys(KeySignature keyA, KeySignature keyB)
+        {
+            // 한쪽만 마이너면서  : 이부분은 나중에 모드 추가되면 수정할 것.
+            if(IsMinor(keyA.majority) != IsMinor(keyB.majority))
+            {
+                return (keyA.tonicNote + 3) % 12 == keyB.tonicNote || (keyA.tonicNote + 9) % 12 == keyB.tonicNote;
+            }
+            else
+            {
+                return false;
+            }
+        }
+
+        public static string GetKeyNotation(KeySignature key)
+        {
+            return Note.GetNoteName(key.tonicNote) + key.majority.ToString();
         }
 
 
@@ -174,7 +216,7 @@ namespace Harmonify
                     }
                 }
             }
-            for(int i = 0; i < assumedKeys.Count; i++)
+            for (int i = 0; i < assumedKeys.Count; i++)
             {
                 result.Add(assumedKeys[i]);
 
@@ -230,11 +272,11 @@ namespace Harmonify
             else
             {
                 // 키에 있는 음 중
-                for(int i = 0; i < keyNotes.Length; i++)
+                for (int i = 0; i < keyNotes.Length; i++)
                 {
-                    
+
                     // 그 음에서 쌓아올린 다이어토닉 코드에 노트가 포함되어 있다면
-                    if(GetDiatonicChordNotesFromRoot(keySignature, keyNotes[i], noteCount).Contains(note))
+                    if (GetDiatonicChordNotesFromRoot(keySignature, keyNotes[i], noteCount).Contains(note))
                     {
                         // 그 음을 추가.
                         result.Add(keyNotes[i]);
