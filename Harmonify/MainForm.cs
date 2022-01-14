@@ -133,6 +133,10 @@ namespace Harmonify
                         {
                             textBox1.Text += song.sections[i].measures[j].chords[k].GetChordNotation();
                         }
+                        else
+                        {
+                            textBox1.Text += "-";
+                        }
                     }
                     textBox1.Text += "|";
                     if(j % 8 == 7)

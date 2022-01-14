@@ -36,5 +36,12 @@ namespace Harmonify
         }
 
 
+
+        public static long GetTimingEuclideanDistance(Note a, Note b)
+        {
+            return (long)MathF.Sqrt(MathF.Pow(a.onTime - b.onTime, 2) + MathF.Pow(a.offTime - b.offTime, 2));
+        }
+
+
     }
 }

@@ -13,7 +13,7 @@ namespace Harmonify
         public static int TimeSigTop { get; private set; }
         public static int TimeSigBottom { get; private set; }
         public List<Measure> measures = new List<Measure>();
-        public List<Note> notes = new List<Note>();
+        private List<Note> notes = new List<Note>();
         private int targetTrackIndex = -1;
         private IuiHandler iuiHandler;
         public List<Section> sections = new List<Section>();
@@ -63,6 +63,7 @@ namespace Harmonify
                 try
                 {
                     MakeNotes();
+                    QuantizeNotes();
                     MakeMeasures();
                     MakeSection();
                 }
@@ -117,11 +118,11 @@ namespace Harmonify
 
         private void ClearChords()
         {
-            for(int i = 0; i < sections.Count; i++)
+            for (int i = 0; i < sections.Count; i++)
             {
-                for(int j = 0; j < sections[i].measures.Count; j++)
+                for (int j = 0; j < sections[i].measures.Count; j++)
                 {
-                    for(int k = 0; k < sections[i].measures[j].chords.Count; k++)
+                    for (int k = 0; k < sections[i].measures[j].chords.Count; k++)
                     {
                         sections[i].measures[j].chords.Clear();
                     }
@@ -210,10 +211,10 @@ namespace Harmonify
                     fourFive.Add(keyNotes[3]);
                     fourFive.Add(keyNotes[4]);
                     sections[i].measures[lastMeasureIndex - 1].chords.Add(GetMatchingChord(fourFive, sections[i].measures[lastMeasureIndex - 1].GetWeightedNotes(), sections[i], lastMeasureIndex - 1, chordNoteCount));
-                    
+
                     // secondary dominanant 필수 : D, E (한단계), A, B (두단계)
                     List<int> diatonics = new List<int>();
-                    for(int j = 0; j < 5; j++)
+                    for (int j = 0; j < 5; j++)
                     {
                         diatonics.Add(keyNotes[j]);
                     }
@@ -244,12 +245,21 @@ namespace Harmonify
                 }
                 currentIndex--;
             }
+            currentIndex = measureIndex + 1;
+            while(currentIndex < section.measures.Count - 1 && currentIndex - measureIndex < 4)
+            {
+                if(section.measures[currentIndex].chords.Count > 0 && section.measures[currentIndex].chords[0].root == chordRoot)
+                {
+                    coefficient -= 1f / (currentIndex - measureIndex) * (currentIndex - measureIndex);
+                }
+                currentIndex++;
+            }
             return coefficient;
         }
 
         private float IncentivizePrimaryChords(KeySignature key, int chordRoot)
         {
-            if(key.TonicNote == chordRoot || key.TonicNote + (int)Note.eNoteName.F == chordRoot || key.TonicNote + (int)Note.eNoteName.G == chordRoot)
+            if (key.TonicNote == chordRoot || key.TonicNote + (int)Note.eNoteName.F == chordRoot || key.TonicNote + (int)Note.eNoteName.G == chordRoot)
             {
                 return 1.05f;
             }
@@ -315,7 +325,7 @@ namespace Harmonify
                 {
                     matchestMatch = currentMatch;
                     matchestKey = nearKeys[i];
-                    
+
                 }
             }
             chordNotes.Clear();
@@ -329,8 +339,7 @@ namespace Harmonify
             };
         }
 
-
-
+        /*
         private void MakeSection()
         {
             int sectionIndex = 0;
@@ -341,7 +350,7 @@ namespace Harmonify
             for (int i = 1; i < measures.Count; i++)
             {
                 // 한쪽은 음표가 없는데 한쪽은 음표가 없다.
-                if (NoteExistenceDifferent(measures[i], measures[i - 1]))
+                if (measures[i].NoteExists() != measures[i - 1].NoteExists())
                 {
                     sectionIndex++;
                     currentSection = new Section();
@@ -351,11 +360,133 @@ namespace Harmonify
                 currentSection.measures.Add(measures[i]);
             }
         }
+        */
 
-        private bool NoteExistenceDifferent(Measure a, Measure b)
+        private void MakeSection()
         {
-            return (a.notes.Count > 0 && b.notes.Count == 0) || (a.notes.Count == 0 && b.notes.Count > 0);
+            int sectionIndex = 0;
+            Section currentSection = new Section();
+            currentSection.sectionName = "0";
+            currentSection.measures.Add(measures[0]);
+            sections.Add(currentSection);
+            // 큼직하게 분할 (절과 절)
+            for (int i = 1; i < measures.Count; i++)
+            {
+                bool addNew = false;
+                // 없으면
+                if (!measures[i].NoteExists())
+                {
+                    // 없은지 첫번째면
+                    if (measures[i - 1].NoteExists())
+                    {
+                        // 마지막 마디이거나 다음 마디가 찼으면 새섹션 아님(기존 섹션에 추가)
+                        addNew = !(i + 1 >= measures.Count || measures[i + 1].NoteExists());
+                    }
+                    // 없은지 여러번이면 그냥 기존 섹션에 추가.
+                    else
+                    {
+                        addNew = false;
+                    }
+                }
+                // 있으면
+                else
+                {
+                    // 있은지 첫번째면
+                    if (!measures[i - 1].NoteExists())
+                    {
+                        // 못갖춘마디가 아니면 새 섹션
+                        addNew = i + 1 < measures.Count && !measures[i].IsIncompleteMeasure(measures[i + 1]);
+                    }
+                    //있은지 여러번이면
+                    else
+                    {
+                        // 2번째마디면 새 섹션
+                        if (i == 1)
+                        {
+                            addNew = true;
+                        }
+                        // 3번째마디부터는
+                        else if (i > 1)
+                        {
+                            // 전전마디가 비어있으면서 이전 마디가 못갖춘마디면 새섹션
+                            addNew = !measures[i - 2].NoteExists() && measures[i - 1].IsIncompleteMeasure(measures[i]);
+                        }
+                    }
+                }
+                if (addNew)
+                {
+                    sectionIndex++;
+                    currentSection = new Section();
+                    currentSection.sectionName = sectionIndex.ToString();
+                    currentSection.measures.Add(measures[i]);
+                    sections.Add(currentSection);
+                }
+                else
+                {
+                    currentSection.measures.Add(measures[i]);
+                }
+            }
+            // 절 내부 분할.
+            for(int i = 0; i < sections.Count; i++)
+            {
+                int duplicationStartMeasure = GetMeasureRepetitions(sections[i]);
+                if(duplicationStartMeasure != -1)
+                {
+                    /*
+                    Section section = sections[i];
+                    sections.RemoveAt(i);
+                    Section frontSection = sections[i].Copy(duplicationStartMeasure, duplicationStartMeasure * 2);
+                    Section backSection = sections[i].Copy(duplicationStartMeasure * 2, sections[i].measures.Count);
+                    sections.Insert(i, backSection);
+                    sections.Insert(i, frontSection);
+                    i--;
+                    */
+                }
+            }
         }
+
+        private int GetMeasureRepetitions(Section section)
+        {
+            // 5마디 미만일 경우 그냥 넘김.
+            if(section.measures.Count < 5)
+            {
+                return -1;
+               // return null;
+            }
+            // 첫 마디가 빈 경우 그냥 넘김.
+            else if (!section.measures[0].NoteExists())
+            {
+                return -1;
+                //return null;
+            }
+            // 5마디 이상일 경우
+            else
+            {
+                int duplicationCount = 0;
+                int duplicationIndex = -1;
+                for (int i = 0; i < section.measures.Count - 4; i++)
+                { 
+                    for (int j = i + 4; j < section.measures.Count; j++)
+                    {
+                        int checkSimilarity = Measure.CheckSimilarity(section.measures[i], section.measures[j]);
+                        if(checkSimilarity == 0)
+                        {
+                            if(duplicationIndex == -1)
+                            {
+                                duplicationIndex = j;
+                            }
+                            duplicationCount++;
+                        }
+                        if(duplicationCount > 1)
+                        {
+                            return duplicationIndex;
+                        }
+                    }
+                }
+                return -1;
+            }
+        }
+
 
         private bool AllTimeSet()
         {
@@ -446,6 +577,35 @@ namespace Harmonify
                 }
             }
 
+        }
+
+        private void QuantizeNotes()
+        {
+            int sixteenthNoteTick = (int)(MidiFile.TicksPerQuarterNote * 0.25f);
+            for (int i = 0; i < notes.Count; i++)
+            {
+                int differenceFromFront = notes[i].onTime % sixteenthNoteTick;
+                // 노트 시작이 뒤에 붙었으면 뒤로 보냄.
+                if(differenceFromFront > sixteenthNoteTick / 2)
+                {
+                    notes[i].onTime = notes[i].onTime + (sixteenthNoteTick - differenceFromFront);
+                }
+                // 아니면 앞으로 보냄.
+                else
+                {
+                    notes[i].onTime = notes[i].onTime - differenceFromFront;
+                }
+                int offDifferenceFromFront = notes[i].offTime % sixteenthNoteTick;
+                // 노트 끝이 뒤에 붙었으면 뒤로 보냄.
+                if(offDifferenceFromFront > sixteenthNoteTick / 2)
+                {
+                    notes[i].offTime = notes[i].offTime + (sixteenthNoteTick - offDifferenceFromFront);
+                }
+                else
+                {
+                    notes[i].offTime = notes[i].offTime - offDifferenceFromFront;
+                }
+            }
         }
 
         private void MakeMeasures()

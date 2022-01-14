@@ -195,6 +195,7 @@ namespace Harmonify
             }
             presentedNotes.Sort();
             List<KeySignature> assumedKeys = AssumeKeysFromNotes(presentedNotes);
+            
             // 마지막 노트는 섹션의 마지막 마디의 노트 중 마지막것이다.
             int lastNote = section.measures[section.measures.Count - 1].notes[section.measures[section.measures.Count - 1].notes.Count - 1].noteNumber;
 
