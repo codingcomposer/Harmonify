@@ -1,24 +1,20 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\Overclock-1\\source\\repos\\Harmonify\\Harmonify\\Harmonify.csproj": {}
+    "C:\\Users\\Dongwoo\\Documents\\GitHub\\Harmonify\\Harmonify\\Harmonify.csproj": {}
   },
   "projects": {
-    "C:\\Users\\Overclock-1\\source\\repos\\Harmonify\\Harmonify\\Harmonify.csproj": {
+    "C:\\Users\\Dongwoo\\Documents\\GitHub\\Harmonify\\Harmonify\\Harmonify.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\Overclock-1\\source\\repos\\Harmonify\\Harmonify\\Harmonify.csproj",
+        "projectUniqueName": "C:\\Users\\Dongwoo\\Documents\\GitHub\\Harmonify\\Harmonify\\Harmonify.csproj",
         "projectName": "Harmonify",
-        "projectPath": "C:\\Users\\Overclock-1\\source\\repos\\Harmonify\\Harmonify\\Harmonify.csproj",
-        "packagesPath": "C:\\Users\\Overclock-1\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\Overclock-1\\source\\repos\\Harmonify\\Harmonify\\obj\\",
+        "projectPath": "C:\\Users\\Dongwoo\\Documents\\GitHub\\Harmonify\\Harmonify\\Harmonify.csproj",
+        "packagesPath": "C:\\Users\\Dongwoo\\.nuget\\packages\\",
+        "outputPath": "C:\\Users\\Dongwoo\\Documents\\GitHub\\Harmonify\\Harmonify\\obj\\",
         "projectStyle": "PackageReference",
-        "fallbackFolders": [
-          "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
-        ],
         "configFilePaths": [
-          "C:\\Users\\Overclock-1\\AppData\\Roaming\\NuGet\\NuGet.Config",
-          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
+          "C:\\Users\\Dongwoo\\AppData\\Roaming\\NuGet\\NuGet.Config",
           "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
         ],
         "originalTargetFrameworks": [
@@ -30,7 +26,6 @@
         },
         "frameworks": {
           "netcoreapp3.1": {
-            "targetAlias": "netcoreapp3.1",
             "projectReferences": {}
           }
         },
@@ -42,7 +37,6 @@
       },
       "frameworks": {
         "netcoreapp3.1": {
-          "targetAlias": "netcoreapp3.1",
           "imports": [
             "net461",
             "net462",
@@ -61,7 +55,7 @@
               "privateAssets": "none"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\5.0.404\\RuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\3.1.202\\RuntimeIdentifierGraph.json"
         }
       }
     }

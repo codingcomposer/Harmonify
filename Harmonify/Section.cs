@@ -13,7 +13,6 @@ namespace Harmonify
         {
             Section section = new Section();
             section.sectionName = sectionName;
-            List<Measure> measures = new List<Measure>();
             for(int i = startIndex;i<endIndex; i++)
             {
                 section.measures.Add(measures[i]);

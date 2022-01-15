@@ -246,9 +246,9 @@ namespace Harmonify
                 currentIndex--;
             }
             currentIndex = measureIndex + 1;
-            while(currentIndex < section.measures.Count - 1 && currentIndex - measureIndex < 4)
+            while (currentIndex < section.measures.Count - 1 && currentIndex - measureIndex < 4)
             {
-                if(section.measures[currentIndex].chords.Count > 0 && section.measures[currentIndex].chords[0].root == chordRoot)
+                if (section.measures[currentIndex].chords.Count > 0 && section.measures[currentIndex].chords[0].root == chordRoot)
                 {
                     coefficient -= 1f / (currentIndex - measureIndex) * (currentIndex - measureIndex);
                 }
@@ -427,63 +427,87 @@ namespace Harmonify
                 }
             }
             // 절 내부 분할.
-            for(int i = 0; i < sections.Count; i++)
+            for (int i = 0; i < sections.Count; i++)
             {
-                int duplicationStartMeasure = GetMeasureRepetitions(sections[i]);
-                if(duplicationStartMeasure != -1)
+                GetMeasureRepetitions(sections[i], out int startingIndex, out int endingIndex);
+                if (startingIndex != -1 && endingIndex != -1)
                 {
-                    /*
-                    Section section = sections[i];
+                    Section frontSection = sections[i].Copy(0, startingIndex);
+                    Section duplicatedSection = sections[i].Copy(startingIndex, startingIndex * 2 > sections[i].measures.Count ? sections[i].measures.Count : startingIndex * 2);
+                    Section backSection = sections[i].Copy(startingIndex * 2, sections[i].measures.Count);
                     sections.RemoveAt(i);
-                    Section frontSection = sections[i].Copy(duplicationStartMeasure, duplicationStartMeasure * 2);
-                    Section backSection = sections[i].Copy(duplicationStartMeasure * 2, sections[i].measures.Count);
-                    sections.Insert(i, backSection);
+
+                    if(backSection.measures.Count > 0)
+                    {
+                        sections.Insert(i, backSection);
+                    }
+                    sections.Insert(i, duplicatedSection);
                     sections.Insert(i, frontSection);
-                    i--;
-                    */
+                    if(backSection.measures.Count > 0)
+                    {
+                        i = sections.IndexOf(backSection) - 1;
+                    }
                 }
             }
+            PrintNotes();
         }
 
-        private int GetMeasureRepetitions(Section section)
+        private void PrintNotes()
         {
-            // 5마디 미만일 경우 그냥 넘김.
-            if(section.measures.Count < 5)
+            string noteString = null;
+            for(int i = 0; i < sections.Count; i++)
             {
-                return -1;
-               // return null;
+                noteString += sections[i].sectionName + ":";
+                for(int j = 0; j < sections[i].measures.Count; j++)
+                {
+                    for(int k = 0; k < sections[i].measures[j].notes.Count; k++)
+                    {
+                        noteString += Note.GetNoteName(sections[i].measures[j].notes[k].noteNumber);
+                    }
+                    noteString += "|";
+                }
+                noteString += "\r\n";
+            }
+            MessageBox.Show(noteString);
+        }
+
+        private void GetMeasureRepetitions(Section section, out int startingIndex, out int endingIndex)
+        {
+            int duplicationCount = 0;
+            startingIndex = -1;
+            endingIndex = -1;
+            // 5마디 미만일 경우 그냥 넘김.
+            if (section.measures.Count < 5)
+            {
+                return;
+                // return null;
             }
             // 첫 마디가 빈 경우 그냥 넘김.
             else if (!section.measures[0].NoteExists())
             {
-                return -1;
+                return;
                 //return null;
             }
             // 5마디 이상일 경우
             else
             {
-                int duplicationCount = 0;
-                int duplicationIndex = -1;
-                for (int i = 0; i < section.measures.Count - 4; i++)
-                { 
-                    for (int j = i + 4; j < section.measures.Count; j++)
+                for (int i = 4; i < section.measures.Count; i++)
+                {
+                    int checkSimilarity = Measure.CheckSimilarity(section.measures[duplicationCount], section.measures[i]);
+                    if (checkSimilarity == 0)
                     {
-                        int checkSimilarity = Measure.CheckSimilarity(section.measures[i], section.measures[j]);
-                        if(checkSimilarity == 0)
+                        if (startingIndex == -1)
                         {
-                            if(duplicationIndex == -1)
-                            {
-                                duplicationIndex = j;
-                            }
-                            duplicationCount++;
+                            startingIndex = i;
                         }
-                        if(duplicationCount > 1)
-                        {
-                            return duplicationIndex;
-                        }
+                        duplicationCount++;
+                    }
+                    else if(startingIndex != -1)
+                    {
+                        break;
                     }
                 }
-                return -1;
+                endingIndex = startingIndex + duplicationCount;
             }
         }
 
@@ -586,7 +610,7 @@ namespace Harmonify
             {
                 int differenceFromFront = notes[i].onTime % sixteenthNoteTick;
                 // 노트 시작이 뒤에 붙었으면 뒤로 보냄.
-                if(differenceFromFront > sixteenthNoteTick / 2)
+                if (differenceFromFront > sixteenthNoteTick / 2)
                 {
                     notes[i].onTime = notes[i].onTime + (sixteenthNoteTick - differenceFromFront);
                 }
@@ -597,7 +621,7 @@ namespace Harmonify
                 }
                 int offDifferenceFromFront = notes[i].offTime % sixteenthNoteTick;
                 // 노트 끝이 뒤에 붙었으면 뒤로 보냄.
-                if(offDifferenceFromFront > sixteenthNoteTick / 2)
+                if (offDifferenceFromFront > sixteenthNoteTick / 2)
                 {
                     notes[i].offTime = notes[i].offTime + (sixteenthNoteTick - offDifferenceFromFront);
                 }
