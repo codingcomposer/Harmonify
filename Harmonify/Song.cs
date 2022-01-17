@@ -429,25 +429,25 @@ namespace Harmonify
             // 절 내부 분할.
             for (int i = 0; i < sections.Count; i++)
             {
-                GetMeasureRepetitions(sections[i], out int startingIndex, out int endingIndex);
-                if (startingIndex != -1 && endingIndex != -1)
+                List<int> sectionStartIndexes = new List<int>();
+                GetMeasureRepetitions(sections[i], out List<int> startingIndex);
+                if (startingIndex.Count > 0)
                 {
-                    Section frontSection = sections[i].Copy(0, startingIndex);
-                    Section duplicatedSection = sections[i].Copy(startingIndex, startingIndex * 2 > sections[i].measures.Count ? sections[i].measures.Count : startingIndex * 2);
-                    Section backSection = sections[i].Copy(startingIndex * 2, sections[i].measures.Count);
-                    sections.RemoveAt(i);
-
-                    if(backSection.measures.Count > 0)
+                    for (int j = 0; j < startingIndex.Count; j++)
                     {
-                        sections.Insert(i, backSection);
-                    }
-                    sections.Insert(i, duplicatedSection);
-                    sections.Insert(i, frontSection);
-                    if(backSection.measures.Count > 0)
-                    {
-                        i = sections.IndexOf(backSection) - 1;
+                        if (!sectionStartIndexes.Contains(startingIndex[j]))
+                        {
+                            sectionStartIndexes.Add(startingIndex[j]);
+                        }
                     }
                 }
+                sectionStartIndexes.Sort();
+                string str = null;
+                for(int j = 0; j < sectionStartIndexes.Count; j++)
+                {
+                    str += sectionStartIndexes[j].ToString() + " ";
+                }
+                MessageBox.Show("시작 인덱스 : " + str);
             }
             PrintNotes();
         }
@@ -455,12 +455,12 @@ namespace Harmonify
         private void PrintNotes()
         {
             string noteString = null;
-            for(int i = 0; i < sections.Count; i++)
+            for (int i = 0; i < sections.Count; i++)
             {
                 noteString += sections[i].sectionName + ":";
-                for(int j = 0; j < sections[i].measures.Count; j++)
+                for (int j = 0; j < sections[i].measures.Count; j++)
                 {
-                    for(int k = 0; k < sections[i].measures[j].notes.Count; k++)
+                    for (int k = 0; k < sections[i].measures[j].notes.Count; k++)
                     {
                         noteString += Note.GetNoteName(sections[i].measures[j].notes[k].noteNumber);
                     }
@@ -471,11 +471,9 @@ namespace Harmonify
             MessageBox.Show(noteString);
         }
 
-        private void GetMeasureRepetitions(Section section, out int startingIndex, out int endingIndex)
+        private void GetMeasureRepetitions(Section section, out List<int> startingIndex)
         {
-            int duplicationCount = 0;
-            startingIndex = -1;
-            endingIndex = -1;
+            startingIndex = new List<int>();
             // 5마디 미만일 경우 그냥 넘김.
             if (section.measures.Count < 5)
             {
@@ -491,23 +489,54 @@ namespace Harmonify
             // 5마디 이상일 경우
             else
             {
-                for (int i = 4; i < section.measures.Count; i++)
+                bool continuing = false;
+                int i = 0;
+                while(i < section.measures.Count - 4)
                 {
-                    int checkSimilarity = Measure.CheckSimilarity(section.measures[duplicationCount], section.measures[i]);
-                    if (checkSimilarity == 0)
+                    int originalIndex = i;
+                    int jStartIndex = i + 4;
+                    bool originalFirstIndexAdded = false;
+                    int duplicationCount = 0;
+                    int duplicationBackup = 0;
+                    for (int j = jStartIndex; j < section.measures.Count; j++)
                     {
-                        if (startingIndex == -1)
+                        int checkSimilarity = Measure.CheckSimilarity(section.measures[originalIndex], section.measures[j]);
+                        if (checkSimilarity == 0)
                         {
-                            startingIndex = i;
+                            // 원본이 들어가 있지 않을 경우 원본 시작 인덱스를 추가. (여러번 반복될 경우 최초 1회만 추가)
+                            if (!originalFirstIndexAdded)
+                            {
+                                originalFirstIndexAdded = true;
+                                startingIndex.Add(i);
+                            }
+                            // 반복부분이 없다가 만난경우 이미 추가 되지 않았으면 추가. (여러번 반복될 경우 최초 1회만 추가)
+                            if (!continuing && !startingIndex.Contains(j))
+                            {
+                                startingIndex.Add(j);
+                                continuing = true;
+                            }
+                            originalIndex++;
+                            duplicationCount++;
                         }
-                        duplicationCount++;
+                        // 겹치는 부분이 없을 경우
+                        else
+                        {
+                            continuing = false;
+                            originalIndex = i;
+                            if(duplicationCount != 0 && duplicationBackup == 0)
+                            {
+                                duplicationBackup = duplicationCount;
+                            }
+                            duplicationCount = 0;
+                            
+                        }
                     }
-                    else if(startingIndex != -1)
+                    do
                     {
-                        break;
+                        i += duplicationBackup;
                     }
+                    while (startingIndex.Contains(i));
                 }
-                endingIndex = startingIndex + duplicationCount;
             }
         }
 
