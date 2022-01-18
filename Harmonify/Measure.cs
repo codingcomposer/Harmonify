@@ -10,6 +10,19 @@ namespace Harmonify
         public List<Note> notes = new List<Note>();
         public List<Chord> chords = new List<Chord>();
         public bool IsIncomplete { get; private set; }
+        public int section;
+        public string NoteNames 
+        { 
+            get 
+            { 
+                string noteNames = null; 
+                for(int i = 0; i < notes.Count; i++) 
+                {
+                    noteNames += notes[i].noteName;
+                }
+                return noteNames;
+            } 
+        }
         public Measure(int _index)
         {
             index = _index;

@@ -364,11 +364,15 @@ namespace Harmonify
 
         private void MakeSection()
         {
+            SplitMultimeasureRests();
+            SplitDuplicateMeasures();
+            PrintNotes();
+        }
+
+        private void SplitMultimeasureRests()
+        {
             int sectionIndex = 0;
-            Section currentSection = new Section();
-            currentSection.sectionName = "0";
-            currentSection.measures.Add(measures[0]);
-            sections.Add(currentSection);
+            measures[0].section = 0;
             // 큼직하게 분할 (절과 절)
             for (int i = 1; i < measures.Count; i++)
             {
@@ -416,42 +420,14 @@ namespace Harmonify
                 if (addNew)
                 {
                     sectionIndex++;
-                    currentSection = new Section();
-                    currentSection.sectionName = sectionIndex.ToString();
-                    currentSection.measures.Add(measures[i]);
-                    sections.Add(currentSection);
+                    measures[i].section = sectionIndex;
                 }
                 else
                 {
-                    currentSection.measures.Add(measures[i]);
+                    measures[i].section = sectionIndex;
                 }
             }
-            // 절 내부 분할.
-            for (int i = 0; i < sections.Count; i++)
-            {
-                List<int> sectionStartIndexes = new List<int>();
-                GetMeasureRepetitions(sections[i], out List<int> startingIndex);
-                if (startingIndex.Count > 0)
-                {
-                    for (int j = 0; j < startingIndex.Count; j++)
-                    {
-                        if (!sectionStartIndexes.Contains(startingIndex[j]))
-                        {
-                            sectionStartIndexes.Add(startingIndex[j]);
-                        }
-                    }
-                }
-                sectionStartIndexes.Sort();
-                string str = null;
-                for(int j = 0; j < sectionStartIndexes.Count; j++)
-                {
-                    str += sectionStartIndexes[j].ToString() + " ";
-                }
-                MessageBox.Show("시작 인덱스 : " + str);
-            }
-            PrintNotes();
         }
-
         private void PrintNotes()
         {
             string noteString = null;
@@ -469,6 +445,112 @@ namespace Harmonify
                 noteString += "\r\n";
             }
             MessageBox.Show(noteString);
+        }
+
+        private void SplitDuplicateMeasures()
+        {
+            int lastmaxSectionIndex = GetBiggestSectionIndex();
+            int originalStartIndex = 0;
+            int originalIndex = 0;
+
+            while (originalIndex < measures.Count)
+            {
+                int nextIndex = GetNextSectionIndex(originalIndex);
+                if (nextIndex - originalStartIndex > 4 && measures[originalStartIndex].NoteExists())
+                {
+                    bool continuing = false;
+                    int originalSectionIndex = GetBiggestSectionIndex() + 1;
+                    while (originalIndex < nextIndex - 4)
+                    {
+                        int comparisonSectionIndex = originalSectionIndex;
+                        for (int comparisonIndex = originalIndex + 4; comparisonIndex < nextIndex; comparisonIndex++)
+                        {
+                            int checkSimilarity = Measure.CheckSimilarity(measures[originalIndex], measures[comparisonIndex]);
+                            if (checkSimilarity == 0)
+                            {
+                                // 반복부분이 없다가 만난경우 비교마디 섹션 인덱스 새로 설정.
+                                if (!continuing)
+                                {
+                                    comparisonSectionIndex++;
+                                    continuing = true;
+                                }
+                                // 원본을 설정
+                                if(measures[originalIndex].section <= lastmaxSectionIndex)
+                                {
+                                    measures[originalIndex].section = originalSectionIndex;
+                                }
+                                // 비교마디 섹션 인덱스 설정
+                                if(measures[comparisonIndex].section <= lastmaxSectionIndex)
+                                {
+                                    measures[comparisonIndex].section = comparisonSectionIndex;
+                                }
+                                originalIndex++;
+                            }
+                            // 겹치는 부분이 없을 경우
+                            else
+                            {
+                                continuing = false;
+                                // 원본 인덱스 재설정
+                                originalIndex = originalStartIndex;
+                            }
+                        }
+                        originalIndex = nextIndex;
+                        originalStartIndex = originalIndex;
+                    }
+                }
+                // 길이가 5마디 미만이거나 빈 마디면 넘김.
+                else
+                {
+                    originalIndex = nextIndex;
+                    originalStartIndex = originalIndex;
+                }
+            }
+            PrintSection();
+        }
+
+        private void PrintSection()
+        {
+            int currentSection = -1;
+            string str = null;
+            for (int i = 0; i < measures.Count; i++)
+            {
+                if (currentSection != measures[i].section)
+                {
+                    str += "|";
+                    currentSection = measures[i].section;
+                }
+                str += measures[i].index + " ";
+            }
+            MessageBox.Show(str);
+        }
+
+        private int GetBiggestSectionIndex()
+        {
+            int biggest = 0;
+            for(int i = 0; i < measures.Count; i++)
+            {
+                if(biggest < measures[i].section)
+                {
+                    biggest = measures[i].section;
+                }
+            }
+            return biggest;
+        }
+
+
+        private int GetNextSectionIndex(int fromIndex)
+        {
+            int sectionIndex = measures[fromIndex].section;
+            int newSectionIndex = measures.Count;
+            for (int i = fromIndex; i < measures.Count; i++)
+            {
+                if (measures[i].section != sectionIndex)
+                {
+                    newSectionIndex = i;
+                    break;
+                }
+            }
+            return newSectionIndex;
         }
 
         private void GetMeasureRepetitions(Section section, out List<int> startingIndex)
@@ -491,7 +573,7 @@ namespace Harmonify
             {
                 bool continuing = false;
                 int i = 0;
-                while(i < section.measures.Count - 4)
+                while (i < section.measures.Count - 4)
                 {
                     int originalIndex = i;
                     int jStartIndex = i + 4;
@@ -523,12 +605,12 @@ namespace Harmonify
                         {
                             continuing = false;
                             originalIndex = i;
-                            if(duplicationCount != 0 && duplicationBackup == 0)
+                            if (duplicationCount != 0 && duplicationBackup == 0)
                             {
                                 duplicationBackup = duplicationCount;
                             }
                             duplicationCount = 0;
-                            
+
                         }
                     }
                     do
