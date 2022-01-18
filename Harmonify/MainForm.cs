@@ -127,16 +127,23 @@ namespace Harmonify
                 textBox1.Text += "\r\n" + i.ToString() + ":";
                 for (int j = 0; j < song.sections[i].measures.Count; j++)
                 {
-                    for (int k = 0; k < song.sections[i].measures[j].chords.Count; k++)
+                    if(song.sections[i].measures[j].chords.Count > 0)
                     {
-                        if (song.sections[i].measures[j].chords[k].chordNotes.Count > 0)
+                        for (int k = 0; k < song.sections[i].measures[j].chords.Count; k++)
                         {
-                            textBox1.Text += song.sections[i].measures[j].chords[k].GetChordNotation();
+                            if (song.sections[i].measures[j].chords[k].chordNotes.Count > 0)
+                            {
+                                textBox1.Text += song.sections[i].measures[j].chords[k].GetChordNotation();
+                            }
+                            else
+                            {
+                                textBox1.Text += "-";
+                            }
                         }
-                        else
-                        {
-                            textBox1.Text += "-";
-                        }
+                    }
+                    else
+                    {
+                        textBox1.Text += "-";
                     }
                     textBox1.Text += "|";
                     if(j % 8 == 7)

@@ -12,7 +12,6 @@ namespace Harmonify
         public List<int> chordNotes = new List<int>();
         public int match;
         public bool isSecondaryDominant;
-
         public string GetChordNotation()
         {
             List<int> notes = new List<int>();

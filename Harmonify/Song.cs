@@ -158,7 +158,7 @@ namespace Harmonify
             {
                 if (sections[i].measures[0].notes.Count > 0)
                 {
-                    for (int j = 1; j < sections[i].measures.Count - 1; j++)
+                    for (int j = 0; j < sections[i].measures.Count - 1; j++)
                     {
                         // 이미 코드가 있으면 넘김.
                         if (sections[i].measures[j].chords.Count > 0)
@@ -169,9 +169,11 @@ namespace Harmonify
                         else
                         {
                             List<int> candidateChords = new List<int>();
+                            Measure lastMeasure = GetLastMeasure(i, j);
                             for (int k = 0; k < primaryTriads.Count; k++)
                             {
-                                if (sections[i].measures[j - 1].chords[0].root != primaryTriads[k])
+                                // 이전 마디가 비었거나, 이전마디에서 포함되지 않았으면 후보군에 추가
+                                if (lastMeasure == null || lastMeasure.chords.Count < 1 || lastMeasure.chords[0].root != primaryTriads[k])
                                 {
                                     candidateChords.Add(primaryTriads[k]);
                                 }
@@ -181,40 +183,86 @@ namespace Harmonify
                     }
                 }
             }
+        }
 
+        private Measure GetLastMeasure(int sectionIndex, int measureIndex)
+        {
+            if(sections.Count > sectionIndex && sections[sectionIndex].measures.Count > measureIndex)
+            {
+                if(measureIndex == 0)
+                {
+                   if(sectionIndex == 0)
+                   {
+                        return null;
+                   }
+                   else
+                   {
+                        return sections[sectionIndex - 1].measures[sections[sectionIndex - 1].measures.Count - 1];
+                   }
+                }
+                else
+                {
+                    return sections[sectionIndex].measures[measureIndex - 1];
+                }
+            }
+            else
+            {
+                return null;
+            }
         }
 
         // 첫 패스 전에 해야 할 것 : 첫코드, 마지막 코드 작성.
         private void PreliminaryPass(int[] keyNotes, int chordNoteCount)
         {
+            int firstNonemptySectionIndex = sections.IndexOf(GetFirstNonEmptySection());
             for (int i = 0; i < sections.Count; i++)
             {
                 // 비지 않은 섹션에 대해서.
                 if (sections[i].measures.Count > 0 && sections[i].measures[0].notes.Count > 0)
                 {
-                    // 첫코드 작성
 
-                    // 1, 4도만 처음에 올수 있음. 체크
-                    List<int> oneFour = new List<int>();
-                    oneFour.Add(keyNotes[0]);
-                    oneFour.Add(keyNotes[3]);
-                    sections[i].measures[0].chords.Add(GetMatchingChord(oneFour, sections[i].measures[0].GetWeightedNotes(), sections[i], 0, chordNoteCount));
-
-                    // 마지막 코드 작성 : 무조건 1도
-                    List<int> one = new List<int>();
-                    one.Add(keyNotes[0]);
                     int lastMeasureIndex = sections[i].measures.Count - 1;
-                    sections[i].measures[lastMeasureIndex].chords.Add(GetMatchingChord(one, sections[i].measures[lastMeasureIndex].GetWeightedNotes(), sections[i], lastMeasureIndex, chordNoteCount));
-
-                    // 마지막에서 두번째 코드 : 4, 5도
-                    List<int> fourFive = new List<int>();
-                    fourFive.Add(keyNotes[3]);
-                    fourFive.Add(keyNotes[4]);
-                    sections[i].measures[lastMeasureIndex - 1].chords.Add(GetMatchingChord(fourFive, sections[i].measures[lastMeasureIndex - 1].GetWeightedNotes(), sections[i], lastMeasureIndex - 1, chordNoteCount));
-
-                    // secondary dominanant 필수 : D, E (한단계), A, B (두단계)
+                    // 첫코드 작성
+                    if (i == firstNonemptySectionIndex)
+                    {
+                       
+                        // 1, 2, 4도만 처음에 올수 있음.
+                        List<int> oneFour = new List<int>();
+                        oneFour.Add(keyNotes[0]);
+                        oneFour.Add(keyNotes[1]);
+                        oneFour.Add(keyNotes[3]);
+                        sections[i].measures[0].chords.Add(GetMatchingChord(oneFour, sections[i].measures[0].GetWeightedNotes(), sections[i], 0, chordNoteCount));
+                    }
+                    // 마지막 코드 작성 : 전체 마지막 마디는 무조건 1도
+                    Chord lastChord;
+                    if (i == sections.Count - 1)
+                    {
+                        List<int> one = new List<int>();
+                        one.Add(keyNotes[0]);
+                        lastChord = GetMatchingChord(one, sections[i].measures[lastMeasureIndex].GetWeightedNotes(), sections[i], lastMeasureIndex, chordNoteCount);
+                        sections[i].measures[lastMeasureIndex].chords.Add(lastChord);
+                    }
+                    // 전체 마지막이 아니면
+                    else
+                    {
+                        List<int> oneFive = new List<int>();
+                        oneFive.Add(keyNotes[0]);
+                        oneFive.Add(keyNotes[1]);
+                        lastChord = GetMatchingChord(oneFive, sections[i].measures[lastMeasureIndex].GetWeightedNotes(), sections[i], lastMeasureIndex, chordNoteCount);
+                        sections[i].measures[lastMeasureIndex].chords.Add(lastChord);
+                    }
+                    // 섹션에 마디가 둘 이상 있고, 마지막 코드가 1도면
+                    if (lastMeasureIndex > 0 && lastChord.root == keyNotes[0])
+                    {
+                        // 마지막에서 두번째 코드 : 4, 5도
+                        List<int> fourFive = new List<int>();
+                        fourFive.Add(keyNotes[3]);
+                        fourFive.Add(keyNotes[4]);
+                        sections[i].measures[lastMeasureIndex - 1].chords.Add(GetMatchingChord(fourFive, sections[i].measures[lastMeasureIndex - 1].GetWeightedNotes(), sections[i], lastMeasureIndex - 1, chordNoteCount));
+                    }
+                    // NonDiatonic 노트 있으면 따져보기.
                     List<int> diatonics = new List<int>();
-                    for (int j = 0; j < 5; j++)
+                    for (int j = 0; j < keyNotes.Length; j++)
                     {
                         diatonics.Add(keyNotes[j]);
                     }
@@ -223,8 +271,10 @@ namespace Harmonify
                         if (!KeySignature.IsDiatonic(sections[i].measures[j].notes))
                         {
                             List<Tuple<int, int>> weightedNotes = sections[i].measures[j].GetWeightedNotes();
+                            Chord matchestDiatonic = GetMatchingChord(diatonics, weightedNotes, sections[i], j, chordNoteCount);
                             Chord matchestSecondaryDominant = GetMatchingSecondaryDominant(weightedNotes);
-                            sections[i].measures[j].chords.Add(matchestSecondaryDominant);
+                            
+                            sections[i].measures[j].chords.Add(matchestDiatonic.match > matchestSecondaryDominant.match ? matchestDiatonic : matchestSecondaryDominant);
                         }
                     }
 
@@ -339,95 +389,30 @@ namespace Harmonify
             };
         }
 
-        /*
         private void MakeSection()
         {
-            int sectionIndex = 0;
-            Section currentSection = new Section();
-            currentSection.sectionName = "0";
-            currentSection.measures.Add(measures[0]);
-            sections.Add(currentSection);
-            for (int i = 1; i < measures.Count; i++)
+            new SectionDivider().Divide(measures);
+            InstantiateSections();
+            PrintNotes();
+        }
+
+        private void InstantiateSections()
+        {
+            int sectionNumber = -1;
+            Section currentSection = null;
+            for(int i = 0; i < measures.Count; i++)
             {
-                // 한쪽은 음표가 없는데 한쪽은 음표가 없다.
-                if (measures[i].NoteExists() != measures[i - 1].NoteExists())
+                if(sectionNumber != measures[i].section)
                 {
-                    sectionIndex++;
+                    sectionNumber = measures[i].section;
                     currentSection = new Section();
-                    currentSection.sectionName = sectionIndex.ToString();
+                    currentSection.sectionName = measures[i].section.ToString();
                     sections.Add(currentSection);
                 }
                 currentSection.measures.Add(measures[i]);
             }
         }
-        */
 
-        private void MakeSection()
-        {
-            SplitMultimeasureRests();
-            SplitDuplicateMeasures();
-            PrintNotes();
-        }
-
-        private void SplitMultimeasureRests()
-        {
-            int sectionIndex = 0;
-            measures[0].section = 0;
-            // 큼직하게 분할 (절과 절)
-            for (int i = 1; i < measures.Count; i++)
-            {
-                bool addNew = false;
-                // 없으면
-                if (!measures[i].NoteExists())
-                {
-                    // 없은지 첫번째면
-                    if (measures[i - 1].NoteExists())
-                    {
-                        // 마지막 마디이거나 다음 마디가 찼으면 새섹션 아님(기존 섹션에 추가)
-                        addNew = !(i + 1 >= measures.Count || measures[i + 1].NoteExists());
-                    }
-                    // 없은지 여러번이면 그냥 기존 섹션에 추가.
-                    else
-                    {
-                        addNew = false;
-                    }
-                }
-                // 있으면
-                else
-                {
-                    // 있은지 첫번째면
-                    if (!measures[i - 1].NoteExists())
-                    {
-                        // 못갖춘마디가 아니면 새 섹션
-                        addNew = i + 1 < measures.Count && !measures[i].IsIncompleteMeasure(measures[i + 1]);
-                    }
-                    //있은지 여러번이면
-                    else
-                    {
-                        // 2번째마디면 새 섹션
-                        if (i == 1)
-                        {
-                            addNew = true;
-                        }
-                        // 3번째마디부터는
-                        else if (i > 1)
-                        {
-                            // 전전마디가 비어있으면서 이전 마디가 못갖춘마디면 새섹션
-                            addNew = !measures[i - 2].NoteExists() && measures[i - 1].IsIncompleteMeasure(measures[i]);
-                        }
-                    }
-                }
-                if (addNew)
-                {
-                    sectionIndex++;
-                    measures[i].section = sectionIndex;
-                }
-                else
-                {
-                    measures[i].section = sectionIndex;
-                }
-            }
-        }
         private void PrintNotes()
         {
             string noteString = null;
@@ -447,67 +432,6 @@ namespace Harmonify
             MessageBox.Show(noteString);
         }
 
-        private void SplitDuplicateMeasures()
-        {
-            int lastmaxSectionIndex = GetBiggestSectionIndex();
-            int originalStartIndex = 0;
-            int originalIndex = 0;
-
-            while (originalIndex < measures.Count)
-            {
-                int nextIndex = GetNextSectionIndex(originalIndex);
-                if (nextIndex - originalStartIndex > 4 && measures[originalStartIndex].NoteExists())
-                {
-                    bool continuing = false;
-                    int originalSectionIndex = GetBiggestSectionIndex() + 1;
-                    while (originalIndex < nextIndex - 4)
-                    {
-                        int comparisonSectionIndex = originalSectionIndex;
-                        for (int comparisonIndex = originalIndex + 4; comparisonIndex < nextIndex; comparisonIndex++)
-                        {
-                            int checkSimilarity = Measure.CheckSimilarity(measures[originalIndex], measures[comparisonIndex]);
-                            if (checkSimilarity == 0)
-                            {
-                                // 반복부분이 없다가 만난경우 비교마디 섹션 인덱스 새로 설정.
-                                if (!continuing)
-                                {
-                                    comparisonSectionIndex++;
-                                    continuing = true;
-                                }
-                                // 원본을 설정
-                                if(measures[originalIndex].section <= lastmaxSectionIndex)
-                                {
-                                    measures[originalIndex].section = originalSectionIndex;
-                                }
-                                // 비교마디 섹션 인덱스 설정
-                                if(measures[comparisonIndex].section <= lastmaxSectionIndex)
-                                {
-                                    measures[comparisonIndex].section = comparisonSectionIndex;
-                                }
-                                originalIndex++;
-                            }
-                            // 겹치는 부분이 없을 경우
-                            else
-                            {
-                                continuing = false;
-                                // 원본 인덱스 재설정
-                                originalIndex = originalStartIndex;
-                            }
-                        }
-                        originalIndex = nextIndex;
-                        originalStartIndex = originalIndex;
-                    }
-                }
-                // 길이가 5마디 미만이거나 빈 마디면 넘김.
-                else
-                {
-                    originalIndex = nextIndex;
-                    originalStartIndex = originalIndex;
-                }
-            }
-            PrintSection();
-        }
-
         private void PrintSection()
         {
             int currentSection = -1;
@@ -524,103 +448,8 @@ namespace Harmonify
             MessageBox.Show(str);
         }
 
-        private int GetBiggestSectionIndex()
-        {
-            int biggest = 0;
-            for(int i = 0; i < measures.Count; i++)
-            {
-                if(biggest < measures[i].section)
-                {
-                    biggest = measures[i].section;
-                }
-            }
-            return biggest;
-        }
 
 
-        private int GetNextSectionIndex(int fromIndex)
-        {
-            int sectionIndex = measures[fromIndex].section;
-            int newSectionIndex = measures.Count;
-            for (int i = fromIndex; i < measures.Count; i++)
-            {
-                if (measures[i].section != sectionIndex)
-                {
-                    newSectionIndex = i;
-                    break;
-                }
-            }
-            return newSectionIndex;
-        }
-
-        private void GetMeasureRepetitions(Section section, out List<int> startingIndex)
-        {
-            startingIndex = new List<int>();
-            // 5마디 미만일 경우 그냥 넘김.
-            if (section.measures.Count < 5)
-            {
-                return;
-                // return null;
-            }
-            // 첫 마디가 빈 경우 그냥 넘김.
-            else if (!section.measures[0].NoteExists())
-            {
-                return;
-                //return null;
-            }
-            // 5마디 이상일 경우
-            else
-            {
-                bool continuing = false;
-                int i = 0;
-                while (i < section.measures.Count - 4)
-                {
-                    int originalIndex = i;
-                    int jStartIndex = i + 4;
-                    bool originalFirstIndexAdded = false;
-                    int duplicationCount = 0;
-                    int duplicationBackup = 0;
-                    for (int j = jStartIndex; j < section.measures.Count; j++)
-                    {
-                        int checkSimilarity = Measure.CheckSimilarity(section.measures[originalIndex], section.measures[j]);
-                        if (checkSimilarity == 0)
-                        {
-                            // 원본이 들어가 있지 않을 경우 원본 시작 인덱스를 추가. (여러번 반복될 경우 최초 1회만 추가)
-                            if (!originalFirstIndexAdded)
-                            {
-                                originalFirstIndexAdded = true;
-                                startingIndex.Add(i);
-                            }
-                            // 반복부분이 없다가 만난경우 이미 추가 되지 않았으면 추가. (여러번 반복될 경우 최초 1회만 추가)
-                            if (!continuing && !startingIndex.Contains(j))
-                            {
-                                startingIndex.Add(j);
-                                continuing = true;
-                            }
-                            originalIndex++;
-                            duplicationCount++;
-                        }
-                        // 겹치는 부분이 없을 경우
-                        else
-                        {
-                            continuing = false;
-                            originalIndex = i;
-                            if (duplicationCount != 0 && duplicationBackup == 0)
-                            {
-                                duplicationBackup = duplicationCount;
-                            }
-                            duplicationCount = 0;
-
-                        }
-                    }
-                    do
-                    {
-                        i += duplicationBackup;
-                    }
-                    while (startingIndex.Contains(i));
-                }
-            }
-        }
 
 
         private bool AllTimeSet()
