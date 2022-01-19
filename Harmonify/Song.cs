@@ -56,6 +56,10 @@ namespace Harmonify
                         }
                     }
                 }
+                if (AllTimeSet())
+                {
+                    break;
+                }
             }
             targetTrackIndex = GetTargetTrackIndex();
             if (targetTrackIndex != -1)
