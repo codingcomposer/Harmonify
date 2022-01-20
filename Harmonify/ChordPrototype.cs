@@ -45,7 +45,6 @@ namespace Harmonify
         maj13, // 도 미 솔 시 레 파 라
         _13, // 도 미 솔 시b 레 파 라
         _13s11, // 도 미 솔 시b 레 파# 라
-        _13b11, // 도 미 솔 시b 레b (파) 라
         b13, // 도 미 솔 시b 레 파 라b
         b13s11, // 도 미 솔 시b 레 파# 라b
         min13, // 도 미b 솔 시b 레 파 라
@@ -53,28 +52,27 @@ namespace Harmonify
         _13s5, // 도 미 솔# 시b 레 파 라
         _13b5, // 도 미b 솔b시b 레 파 라
     };
-
-    public enum EFunctionType
-    {
-        tonic,
-        superTonic,
-        mediant,
-        subdominant,
-        dominant,
-        submediant,
-        leading
-    }
     class ChordPrototype
     {
-
+        public static List<ChordStack> chordStacks = new List<ChordStack>();
         static ChordPrototype()
         {
-            List<ChordStack> chordStacks = new List<ChordStack>();
-            foreach(EStackType eStackType in Enum.GetValues(typeof(EStackType)))
+            foreach (EStackType eStackType in Enum.GetValues(typeof(EStackType)))
             {
                 chordStacks.Add(new ChordStack(eStackType));
             }
         }
 
+        public static ChordStack GetChordStackOf(EStackType eStackType)
+        {
+            for(int i = 0; i < chordStacks.Count; i++)
+            {
+                if (chordStacks[i].EStackType.Equals(eStackType))
+                {
+                    return chordStacks[i];
+                }
+            }
+            return null;
+        }
     }
 }

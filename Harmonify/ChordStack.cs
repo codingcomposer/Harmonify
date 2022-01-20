@@ -20,26 +20,18 @@ namespace Harmonify
             if (stackTypeStr.Contains("13"))
             {
                 Complexity += 4f;
-                StackCount = 7;
             }
             else if (stackTypeStr.Contains("11"))
             {
                 Complexity += 3f;
-                StackCount = 6;
             }
             else if (stackTypeStr.Contains("9"))
             {
                 Complexity += 2f;
-                StackCount = 5;
             }
             else if (stackTypeStr.Contains("7"))
             {
                 Complexity += 1f;
-                StackCount = 4;
-            }
-            else
-            {
-                StackCount = 3;
             }
             if (stackTypeStr.Contains("aug") || stackTypeStr.Contains("dim"))
             {
@@ -49,6 +41,8 @@ namespace Harmonify
             {
                 Complexity += 1f;
             }
+            chordNotes.Add(0);
+            chordNotes.AddRange(GetStackingNotes(eStackType));
         }
 
         private List<int> GetStackingNotes(EStackType eStackType)
@@ -225,10 +219,6 @@ namespace Harmonify
                     break;
                 case EStackType._13s11: // 도 미 솔 시b 레 파# 라
                     stackingNotes.AddRange(GetStackingNotes(EStackType.s11));
-                    stackingNotes.Add(A + OCTAVE_CHROMATIC);
-                    break;
-                case EStackType._13b11: // 도 미 솔 시b 레b (파) 라
-                    stackingNotes.AddRange(GetStackingNotes(EStackType.b9));
                     stackingNotes.Add(A + OCTAVE_CHROMATIC);
                     break;
                 case EStackType.b13: // 도 미 솔 시b 레 파 라b
