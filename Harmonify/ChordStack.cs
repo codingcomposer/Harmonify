@@ -12,6 +12,18 @@ namespace Harmonify
         public int StackCount { get; private set; }
 
         public List<int> chordNotes = new List<int>();
+        const int CsDb = 1;
+        const int D = 2;
+        const int DsEb = 3;
+        const int E = 4;
+        const int F = 5;
+        const int FsGb = 6;
+        const int G = 7;
+        const int GsAb = 8;
+        const int A = 9;
+        const int AsBb = 10;
+        const int B = 11;
+        const int OCTAVE_CHROMATIC = 12;
         public ChordStack(EStackType eStackType)
         {
             EStackType = eStackType;
@@ -47,20 +59,8 @@ namespace Harmonify
 
         private List<int> GetStackingNotes(EStackType eStackType)
         {
-            const int CsDb = 1;
-            const int D = 2;
-            const int DsEb = 3;
-            const int E = 4;
-            const int F = 5;
-            const int FsGb = 6;
-            const int G = 7;
-            const int GsAb = 8;
-            const int A = 9;
-            const int AsBb = 10;
-            const int B = 11;
-            const int OCTAVE_CHROMATIC = 12;
             List<int> stackingNotes = new List<int>();
-            switch (EStackType)
+            switch (eStackType)
             {
                 case EStackType.maj:
                     stackingNotes.Add(E);

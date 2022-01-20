@@ -52,7 +52,7 @@ namespace Harmonify
         _13s5, // 도 미 솔# 시b 레 파 라
         _13b5, // 도 미b 솔b시b 레 파 라
     };
-    class ChordPrototype
+    public class ChordPrototype
     {
         public static List<ChordStack> chordStacks = new List<ChordStack>();
         static ChordPrototype()

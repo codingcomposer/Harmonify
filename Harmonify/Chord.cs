@@ -8,12 +8,17 @@ namespace Harmonify
     public class Chord
     {
         public int root;
-        public bool major;
+        public ChordStack chordStack;
+        public EChordFunction eChordFunction;
+        //public bool major;
         public List<int> chordNotes = new List<int>();
         public int match;
         public bool isSecondaryDominant;
+
         public string GetChordNotation()
         {
+            return Note.GetNoteName(root) + chordStack.EStackType.ToString();
+            /*
             List<int> notes = new List<int>();
             notes.AddRange(chordNotes);
             string result = null;
@@ -48,16 +53,7 @@ namespace Harmonify
                 }
                 return result;
             }
-        }
-
-        public static string GetChordNotation(List<int> chordNotes)
-        {
-            Chord chord = new Chord()
-            {
-                chordNotes = chordNotes,
-
-            };
-            return chord.GetChordNotation();
+            */
         }
 
         private static List<int> GetPossibleTriad(List<int> notes)

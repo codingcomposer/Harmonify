@@ -312,7 +312,6 @@ namespace Harmonify
         }
 
 
-        // 키에서 해당 노트를 루트로 하는 코드의 구성음을 가져온다.
         public static List<int> GetDiatonicChordNotesFromRoot(KeySignature keySignature, int chordRoot, int noteCount)
         {
             List<int> result = new List<int>();

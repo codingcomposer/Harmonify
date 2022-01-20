@@ -4,7 +4,7 @@ using System.Text;
 
 namespace Harmonify
 {
-    public enum ChordFunction { Tonic, SuperTonic, Mediant, SubDominant, Dominant, SubMediant, Leading}
+    public enum EChordFunction { Tonic, SuperTonic, Mediant, SubDominant, Dominant, SubMediant}
     public class ChordFunction
     {
         public int root;
@@ -103,11 +103,38 @@ namespace Harmonify
             subMediantForMin.Add(ChordPrototype.GetChordStackOf(EStackType.maj7));
             subMediantForMin.Add(ChordPrototype.GetChordStackOf(EStackType.min9));
         }
-        public List<ChordStack> GetAvailableChordStacks(ChordFunction chordFunction, bool major)
+
+        public static List<Chord> GetAvailableChords(KeySignature keySignature, EChordFunction eChordFunction, int spice)
         {
-            switch (chordFunction)
+            List<ChordStack> chordStacks = new List<ChordStack>();
+            chordStacks.AddRange(GetAvailableChordStacks(eChordFunction, keySignature.majority == KeySignature.Majority.major));
+            for(int i = 0; i < chordStacks.Count; i++)
             {
-                case ChordFunction.Tonic:
+                if(chordStacks[i].Complexity >= spice) 
+                {
+                    chordStacks.RemoveAt(i);
+                    i--;
+                }
+            }
+            List<Chord> chords = new List<Chord>();
+            int[] keyNotes = KeySignature.GetKeyNotes(keySignature);
+            for(int i = 0; i < chordStacks.Count; i++)
+            {
+                Chord chord = new Chord();
+                chord.root = keyNotes[(int)eChordFunction];
+                chord.eChordFunction = eChordFunction;
+                chord.chordStack = chordStacks[i];
+                chord.chordNotes.Add(chord.root);
+                chord.chordNotes.AddRange(chordStacks[i].chordNotes);
+                chords.Add(chord);
+            }
+            return chords;
+        }
+        private static List<ChordStack> GetAvailableChordStacks(EChordFunction eChordFunction, bool major)
+        {
+            switch (eChordFunction)
+            {
+                case EChordFunction.Tonic:
                     if (major)
                     {
                         return tonicForMaj;
@@ -116,7 +143,7 @@ namespace Harmonify
                     {
                         return tonicForMin;
                     }
-                case ChordFunction.SuperTonic:
+                case EChordFunction.SuperTonic:
                     if(major)
                     {
                         return superTonicForMaj;
@@ -125,7 +152,7 @@ namespace Harmonify
                     {
                         return superTonicForMin;
                     }
-                case ChordFunction.Mediant:
+                case EChordFunction.Mediant:
                     if (major)
                     {
                         return mediantForMaj;
@@ -134,7 +161,7 @@ namespace Harmonify
                     {
                         return mediantForMin;
                     }
-                case ChordFunction.SubDominant:
+                case EChordFunction.SubDominant:
                     if (major)
                     {
                         return subDominantForMaj;
@@ -143,7 +170,7 @@ namespace Harmonify
                     {
                         return subDominantForMin;
                     }
-                case ChordFunction.Dominant:
+                case EChordFunction.Dominant:
                     if (major)
                     {
                         return dominantForMaj;
@@ -152,7 +179,7 @@ namespace Harmonify
                     {
                         return dominantForMin;
                     }
-                case ChordFunction.SubMediant:
+                case EChordFunction.SubMediant:
                     if (major)
                     {
                         return subMediantForMaj;
