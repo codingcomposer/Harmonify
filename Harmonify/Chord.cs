@@ -17,44 +17,9 @@ namespace Harmonify
 
         public string GetChordNotation()
         {
-            return Note.GetNoteName(root) + chordStack.EStackType.ToString();
-            /*
-            List<int> notes = new List<int>();
-            notes.AddRange(chordNotes);
-            string result = null;
-            if (notes.Count < 3)
-            {
-                return null;
-            }
-            else
-            {
-                List<int> possibleTriad = GetPossibleTriad(notes);
-                int mediantInterval = possibleTriad[1] - possibleTriad[0];
-                result += Note.GetNoteName(possibleTriad[0]);
-                if (mediantInterval < 0)
-                {
-                    mediantInterval += 12;
-                }
-                if (mediantInterval == 3)
-                {
-                    result += "m";
-                }
-                if (chordNotes.Count == 4)
-                {
-                    int sevenInterval = (possibleTriad[3] - possibleTriad[0] + 12) % 12;
-                    if (sevenInterval == 10)
-                    {
-                        result += "7";
-                    }
-                    else if (sevenInterval == 11)
-                    {
-                        result += "M7";
-                    }
-                }
-                return result;
-            }
-            */
+            return Note.GetNoteName(root) + ChordPrototype.GetStackNotation(chordStack.EStackType);
         }
+        
 
         private static List<int> GetPossibleTriad(List<int> notes)
         {

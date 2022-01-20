@@ -45,25 +45,28 @@ namespace Harmonify
             // MidiFileNameLabel
             // 
             this.MidiFileNameLabel.AutoSize = true;
-            this.MidiFileNameLabel.Location = new System.Drawing.Point(90, 13);
+            this.MidiFileNameLabel.Location = new System.Drawing.Point(116, 17);
+            this.MidiFileNameLabel.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.MidiFileNameLabel.Name = "MidiFileNameLabel";
-            this.MidiFileNameLabel.Size = new System.Drawing.Size(174, 15);
+            this.MidiFileNameLabel.Size = new System.Drawing.Size(219, 20);
             this.MidiFileNameLabel.TabIndex = 0;
             this.MidiFileNameLabel.Text = "Select a midi file to harmonify.";
             // 
             // textBox1
             // 
-            this.textBox1.Location = new System.Drawing.Point(12, 162);
+            this.textBox1.Location = new System.Drawing.Point(15, 216);
+            this.textBox1.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
             this.textBox1.Multiline = true;
             this.textBox1.Name = "textBox1";
-            this.textBox1.Size = new System.Drawing.Size(389, 223);
+            this.textBox1.Size = new System.Drawing.Size(499, 296);
             this.textBox1.TabIndex = 1;
             // 
             // ImportFileButton
             // 
-            this.ImportFileButton.Location = new System.Drawing.Point(327, 9);
+            this.ImportFileButton.Location = new System.Drawing.Point(420, 12);
+            this.ImportFileButton.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
             this.ImportFileButton.Name = "ImportFileButton";
-            this.ImportFileButton.Size = new System.Drawing.Size(75, 23);
+            this.ImportFileButton.Size = new System.Drawing.Size(96, 31);
             this.ImportFileButton.TabIndex = 2;
             this.ImportFileButton.Text = "Import..";
             this.ImportFileButton.UseVisualStyleBackColor = true;
@@ -72,9 +75,10 @@ namespace Harmonify
             // button1
             // 
             this.button1.Cursor = System.Windows.Forms.Cursors.Default;
-            this.button1.Location = new System.Drawing.Point(437, 362);
+            this.button1.Location = new System.Drawing.Point(562, 483);
+            this.button1.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
             this.button1.Name = "button1";
-            this.button1.Size = new System.Drawing.Size(75, 23);
+            this.button1.Size = new System.Drawing.Size(96, 31);
             this.button1.TabIndex = 3;
             this.button1.Text = "Play";
             this.button1.UseVisualStyleBackColor = true;
@@ -97,9 +101,10 @@ namespace Harmonify
             "A",
             "A#/Bb",
             "B"});
-            this.KeyRootComboBox.Location = new System.Drawing.Point(136, 60);
+            this.KeyRootComboBox.Location = new System.Drawing.Point(175, 80);
+            this.KeyRootComboBox.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
             this.KeyRootComboBox.Name = "KeyRootComboBox";
-            this.KeyRootComboBox.Size = new System.Drawing.Size(55, 23);
+            this.KeyRootComboBox.Size = new System.Drawing.Size(70, 28);
             this.KeyRootComboBox.TabIndex = 4;
             this.KeyRootComboBox.SelectedIndexChanged += new System.EventHandler(this.KeyRootComboBox_SelectedIndexChanged);
             // 
@@ -110,17 +115,19 @@ namespace Harmonify
             "모름",
             "Major",
             "Minor"});
-            this.KeyMajorityComboBox.Location = new System.Drawing.Point(197, 60);
+            this.KeyMajorityComboBox.Location = new System.Drawing.Point(253, 80);
+            this.KeyMajorityComboBox.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
             this.KeyMajorityComboBox.Name = "KeyMajorityComboBox";
-            this.KeyMajorityComboBox.Size = new System.Drawing.Size(105, 23);
+            this.KeyMajorityComboBox.Size = new System.Drawing.Size(134, 28);
             this.KeyMajorityComboBox.TabIndex = 5;
             this.KeyMajorityComboBox.SelectedIndexChanged += new System.EventHandler(this.MajorityComboBox_SelectedIndexChanged);
             // 
             // button2
             // 
-            this.button2.Location = new System.Drawing.Point(327, 111);
+            this.button2.Location = new System.Drawing.Point(420, 148);
+            this.button2.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
             this.button2.Name = "button2";
-            this.button2.Size = new System.Drawing.Size(75, 23);
+            this.button2.Size = new System.Drawing.Size(96, 31);
             this.button2.TabIndex = 6;
             this.button2.Text = "Analyze";
             this.button2.UseVisualStyleBackColor = true;
@@ -129,26 +136,29 @@ namespace Harmonify
             // KeyLabel
             // 
             this.KeyLabel.AutoSize = true;
-            this.KeyLabel.Location = new System.Drawing.Point(90, 63);
+            this.KeyLabel.Location = new System.Drawing.Point(116, 84);
+            this.KeyLabel.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.KeyLabel.Name = "KeyLabel";
-            this.KeyLabel.Size = new System.Drawing.Size(26, 15);
+            this.KeyLabel.Size = new System.Drawing.Size(33, 20);
             this.KeyLabel.TabIndex = 7;
             this.KeyLabel.Text = "Key";
             this.KeyLabel.Click += new System.EventHandler(this.KeyLabel_Click);
             // 
             // SpiceTrackBar
             // 
-            this.SpiceTrackBar.Location = new System.Drawing.Point(128, 111);
+            this.SpiceTrackBar.Location = new System.Drawing.Point(165, 148);
+            this.SpiceTrackBar.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
             this.SpiceTrackBar.Name = "SpiceTrackBar";
-            this.SpiceTrackBar.Size = new System.Drawing.Size(104, 45);
+            this.SpiceTrackBar.Size = new System.Drawing.Size(134, 56);
             this.SpiceTrackBar.TabIndex = 9;
             this.SpiceTrackBar.Scroll += new System.EventHandler(this.SpiceTrackBar_Scroll);
             // 
             // AssumeKeysButton
             // 
-            this.AssumeKeysButton.Location = new System.Drawing.Point(327, 60);
+            this.AssumeKeysButton.Location = new System.Drawing.Point(420, 80);
+            this.AssumeKeysButton.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
             this.AssumeKeysButton.Name = "AssumeKeysButton";
-            this.AssumeKeysButton.Size = new System.Drawing.Size(75, 23);
+            this.AssumeKeysButton.Size = new System.Drawing.Size(96, 31);
             this.AssumeKeysButton.TabIndex = 10;
             this.AssumeKeysButton.Text = "Guess";
             this.AssumeKeysButton.UseVisualStyleBackColor = true;
@@ -156,9 +166,9 @@ namespace Harmonify
             // 
             // MainForm
             // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
+            this.AutoScaleDimensions = new System.Drawing.SizeF(9F, 20F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(525, 402);
+            this.ClientSize = new System.Drawing.Size(675, 536);
             this.Controls.Add(this.AssumeKeysButton);
             this.Controls.Add(this.SpiceTrackBar);
             this.Controls.Add(this.KeyLabel);
@@ -169,6 +179,7 @@ namespace Harmonify
             this.Controls.Add(this.ImportFileButton);
             this.Controls.Add(this.textBox1);
             this.Controls.Add(this.MidiFileNameLabel);
+            this.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
             this.Name = "MainForm";
             this.Text = "MainForm";
             this.Load += new System.EventHandler(this.MainForm_Load);

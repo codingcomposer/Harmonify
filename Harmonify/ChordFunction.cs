@@ -43,8 +43,6 @@ namespace Harmonify
             // 메디안트
             mediantForMaj.Add(ChordPrototype.GetChordStackOf(EStackType.min));
             mediantForMaj.Add(ChordPrototype.GetChordStackOf(EStackType.min7));
-            mediantForMaj.Add(ChordPrototype.GetChordStackOf(EStackType.min11));
-            mediantForMaj.Add(ChordPrototype.GetChordStackOf(EStackType.min13));
 
             // 서브도미넌트
             subDominantForMaj.Add(ChordPrototype.GetChordStackOf(EStackType.maj));
@@ -110,7 +108,7 @@ namespace Harmonify
             chordStacks.AddRange(GetAvailableChordStacks(eChordFunction, keySignature.majority == KeySignature.Majority.major));
             for(int i = 0; i < chordStacks.Count; i++)
             {
-                if(chordStacks[i].Complexity >= spice) 
+                if(chordStacks[i].Complexity > spice) 
                 {
                     chordStacks.RemoveAt(i);
                     i--;

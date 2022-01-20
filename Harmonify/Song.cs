@@ -148,14 +148,13 @@ namespace Harmonify
 
         private void Chordify(int spice)
         {
-            int chordNoteCount = spice > 0 ? 4 : 3;
             int[] keyNotes = KeySignature.GetKeyNotes(KeySignature);
             List<EChordFunction> diatonics = new List<EChordFunction>();
             foreach (EChordFunction eChordFunction in Enum.GetValues(typeof(EChordFunction)))
             {
                 diatonics.Add(eChordFunction);
             }
-            PreliminaryPass(keyNotes, chordNoteCount);
+            PreliminaryPass(keyNotes);
             for (int i = 0; i < sections.Count; i++)
             {
                 if (sections[i].measures[0].notes.Count > 0)
@@ -170,7 +169,7 @@ namespace Harmonify
                         // 아니면
                         else
                         {
-                            sections[i].measures[j].chords.Add(GetMatchingChord(diatonics, sections[i].measures[j].GetWeightedNotes(), sections[i], j, chordNoteCount));
+                            sections[i].measures[j].chords.Add(GetMatchingChord(diatonics, sections[i].measures[j].GetWeightedNotes(), sections[i], j, spice));
 
                         }
                     }
@@ -205,7 +204,7 @@ namespace Harmonify
         }
 
         // 첫 패스 전에 해야 할 것 : 첫코드, 마지막 코드 작성.
-        private void PreliminaryPass(int[] keyNotes, int chordNoteCount)
+        private void PreliminaryPass(int[] keyNotes)
         {
             int firstNonemptySectionIndex = sections.IndexOf(GetFirstNonEmptySection());
             for (int i = 0; i < sections.Count; i++)
@@ -224,7 +223,7 @@ namespace Harmonify
                         oneTwoFour.Add(EChordFunction.Tonic);
                         oneTwoFour.Add(EChordFunction.SuperTonic);
                         oneTwoFour.Add(EChordFunction.SubDominant);
-                        sections[i].measures[0].chords.Add(GetMatchingChord(oneTwoFour, sections[i].measures[0].GetWeightedNotes(), sections[i], 0, chordNoteCount));
+                        sections[i].measures[0].chords.Add(GetMatchingChord(oneTwoFour, sections[i].measures[0].GetWeightedNotes(), sections[i], 0, spice));
                     }
                     // 마지막 코드 작성 : 전체 마지막 마디는 무조건 1도
                     Chord lastChord;
@@ -232,7 +231,7 @@ namespace Harmonify
                     {
                         List<EChordFunction> one = new List<EChordFunction>();
                         one.Add(EChordFunction.Tonic);
-                        lastChord = GetMatchingChord(one, sections[i].measures[lastMeasureIndex].GetWeightedNotes(), sections[i], lastMeasureIndex, chordNoteCount);
+                        lastChord = GetMatchingChord(one, sections[i].measures[lastMeasureIndex].GetWeightedNotes(), sections[i], lastMeasureIndex, spice);
                         sections[i].measures[lastMeasureIndex].chords.Add(lastChord);
                     }
                     // 전체 마지막이 아니면
@@ -241,7 +240,7 @@ namespace Harmonify
                         List<EChordFunction> oneFive = new List<EChordFunction>();
                         oneFive.Add(EChordFunction.Tonic);
                         oneFive.Add(EChordFunction.Dominant);
-                        lastChord = GetMatchingChord(oneFive, sections[i].measures[lastMeasureIndex].GetWeightedNotes(), sections[i], lastMeasureIndex, chordNoteCount);
+                        lastChord = GetMatchingChord(oneFive, sections[i].measures[lastMeasureIndex].GetWeightedNotes(), sections[i], lastMeasureIndex, spice);
                         sections[i].measures[lastMeasureIndex].chords.Add(lastChord);
                     }
                     // 섹션에 마디가 둘 이상 있고, 마지막 코드가 1도면
@@ -251,7 +250,7 @@ namespace Harmonify
                         List<EChordFunction> fourFive = new List<EChordFunction>();
                         fourFive.Add(EChordFunction.SubDominant);
                         fourFive.Add(EChordFunction.Dominant);
-                        sections[i].measures[lastMeasureIndex - 1].chords.Add(GetMatchingChord(fourFive, sections[i].measures[lastMeasureIndex - 1].GetWeightedNotes(), sections[i], lastMeasureIndex - 1, chordNoteCount));
+                        sections[i].measures[lastMeasureIndex - 1].chords.Add(GetMatchingChord(fourFive, sections[i].measures[lastMeasureIndex - 1].GetWeightedNotes(), sections[i], lastMeasureIndex - 1, spice));
                     }
                     // NonDiatonic 노트 있으면 따져보기.
                     List<EChordFunction> diatonics = new List<EChordFunction>();
@@ -355,7 +354,7 @@ namespace Harmonify
             int matchestMatch = int.MinValue;
             for (int i = 0; i < nearKeys.Count; i++)
             {
-                List<Chord> dominantChords = ChordFunction.GetAvailableChords(nearKeys[i], EChordFunction.Dominant, 2);
+                List<Chord> dominantChords = ChordFunction.GetAvailableChords(nearKeys[i], EChordFunction.Dominant, spice);
                 currentMatch = 0;
                 for (int chordIndex = 0; chordIndex < dominantChords.Count; chordIndex++)
                 {
