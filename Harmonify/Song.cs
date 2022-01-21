@@ -111,9 +111,9 @@ namespace Harmonify
             return result;
         }
 
-        public List<KeySignature> AssumeKeys()
+        public KeySignature AssumeKey()
         {
-            return KeySignature.AssumeKeys(measures, notes);
+            return KeySignature.AssumeKey(measures, notes);
         }
 
         public void Analyze(KeySignature keySignature, int _spice)
@@ -125,16 +125,16 @@ namespace Harmonify
             {
                 if (KeySignature == null)
                 {
-                    List<KeySignature> candidates = AssumeKeys();
+                    KeySignature candidate = AssumeKey();
 
-                    if (candidates.Count < 1)
+                    if (candidate == null)
                     {
                         MessageBox.Show("적합한 키를 찾지 못했습니다.");
                         return;
                     }
                     else
                     {
-                        KeySignature = candidates[0];
+                        KeySignature = candidate;
                     }
                 }
                 Chordify(spice);

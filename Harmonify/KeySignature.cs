@@ -145,7 +145,7 @@ namespace Harmonify
         }
 
 
-        public static List<KeySignature> AssumeKeys(List<Measure> measures, List<Note> notes)
+        public static KeySignature AssumeKey(List<Measure> measures, List<Note> notes)
         {
             List<KeySignature> result = new List<KeySignature>();
             // 전체 마디에서 음들의 경중을 따짐.
@@ -184,11 +184,10 @@ namespace Harmonify
                 presentedNotes.Add(tuples[i].Item1);
             }
             presentedNotes.Sort();
-            
-            List<KeySignature> assumedKeys = AssumeKeysFromNotes(presentedNotes);
-            
+            return AssumeKeyFromNotes(presentedNotes);
+            /*
             // 마지막 노트는 섹션의 마지막 마디의 노트 중 마지막것이다.
-            int lastNote = notes[notes.Count - 1].noteNumber;
+            int lastNote = notes[^1].noteNumber;
 
             // 등장한 음으로 예상한 키 중
             for (int i = 0; i < assumedKeys.Count; i++)
@@ -214,6 +213,7 @@ namespace Harmonify
 
             }
             return result;
+            */
         }
 
         private static float GetSimilarity(int[] keyNotes, List<int> notes)
@@ -232,20 +232,22 @@ namespace Harmonify
             return (float)sameNotes / count;
         }
 
-        private static List<KeySignature> AssumeKeysFromNotes(List<int> notes)
+        private static KeySignature AssumeKeyFromNotes(List<int> notes)
         {
-            List<KeySignature> keys = new List<KeySignature>();
+            KeySignature matchestKey = null;
+            float maxMatch = 0f;
             for (int i = 0; i < notes.Count; i++)
             {
-                int[] keyNotes = GetKeyNotes(new KeySignature(notes[i], Majority.major));
+                KeySignature key = new KeySignature(notes[i], Majority.major);
+                int[] keyNotes = GetKeyNotes(key);
                 float similarity = GetSimilarity(keyNotes, notes);
-                if (similarity > 0.8f)
+                if (matchestKey == null || similarity > maxMatch)
                 {
-
-                    keys.Add(new KeySignature(notes[i], Majority.major));
+                    matchestKey = key;
+                    maxMatch = similarity;
                 }
             }
-            return keys;
+            return matchestKey;
         }
 
         // 해당 키에서 note를 포함한 diatonic chord들의 root를 반환한다.

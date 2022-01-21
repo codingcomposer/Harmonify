@@ -136,15 +136,10 @@ namespace Harmonify
 
         private void AssumeKeysButton_Click(object sender, EventArgs e)
         {
-            List<KeySignature> assumedKeys = song.AssumeKeys();
-            if (assumedKeys != null)
+            KeySignature assumedKey = song.AssumeKey();
+            if (assumedKey != null)
             {
-                string keySentence = "예상 키 : ";
-                for (int i = 0; i < assumedKeys.Count; i++)
-                {
-                    keySentence += Note.GetNoteName(assumedKeys[i].TonicNote) + assumedKeys[i].majority.ToString();
-                }
-                MessageBox.Show(keySentence);
+                MessageBox.Show("예상 키 : " + Note.GetNoteName(assumedKey.TonicNote) + assumedKey.majority.ToString());
             }
         }
 
