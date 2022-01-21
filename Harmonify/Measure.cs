@@ -11,6 +11,9 @@ namespace Harmonify
         public List<Chord> chords = new List<Chord>();
         public bool IsIncomplete { get; private set; }
         public int section;
+        public int[] noteWeights = new int[12];
+        public Measure PrevMeasure { get; private set; }
+        public Measure NextMeasure { get; private set; }
         public string NoteNames 
         { 
             get 
@@ -28,6 +31,12 @@ namespace Harmonify
             index = _index;
         }
 
+        public void Link(Measure prev, Measure next)
+        {
+            PrevMeasure = prev;
+            NextMeasure = next;
+        }
+
         public void TrimNotes()
         {
             for (int i = 0; i < notes.Count; i++)
@@ -43,41 +52,29 @@ namespace Harmonify
                 }
                 notes[i].length = notes[i].offTime - notes[i].onTime;
             }
+            SetNoteWeights();
+            IsIncomplete = CheckIncompleteMeasure();
         }
 
-        // 마디에서 가장 주요한 음을 찾는다.
-        public List<Tuple<int, int>> GetWeightedNotes()
+        private void SetNoteWeights()
         {
-            int[] weightedNotes = new int[12];
-            for (int j = 0; j < notes.Count; j++)
+            for(int i = 0; i < noteWeights.Length; i++)
             {
-
-                weightedNotes[notes[j].noteNumber % 12] += notes[j].length;
+                noteWeights[i] = 0;
             }
-            List<Tuple<int, int>> tuples = new List<Tuple<int, int>>();
-            for (int i = 0; i < weightedNotes.Length; i++)
+            for (int i = 0; i < notes.Count; i++)
             {
-                if (weightedNotes[i] != 0)
-                {
-                    tuples.Add(new Tuple<int, int>(i, weightedNotes[i]));
-                }
+                noteWeights[notes[i].noteNumber % 12] += notes[i].length;
             }
-            tuples.Sort((x, y) => y.Item2.CompareTo(x.Item2));
-            for(int i = 0; i < tuples.Count; i++)
-            {
-                // 쓰이지 않은 음은 제거
-                if(tuples[i].Item2 <= 0)
-                {
-                    tuples.RemoveAt(i);
-                    i--;
-                }
-            }
-            return tuples;
         }
 
-        public bool IsIncompleteMeasure(Measure nextMeasure)
+        private bool CheckIncompleteMeasure()
         {
             if(notes.Count < 1)
+            {
+                return false;
+            }
+            if(NextMeasure == null)
             {
                 return false;
             }
@@ -100,9 +97,9 @@ namespace Harmonify
                     {
                         currentMeasureNoteLengthsSum += notes[i].length;
                     }
-                    for(int i = 0; i < nextMeasure.notes.Count; i++)
+                    for(int i = 0; i < NextMeasure.notes.Count; i++)
                     {
-                        nextMeasureNoteLengthSum += nextMeasure.notes[i].length;
+                        nextMeasureNoteLengthSum += NextMeasure.notes[i].length;
                     }
                     return nextMeasureNoteLengthSum > currentMeasureNoteLengthsSum;
                 }

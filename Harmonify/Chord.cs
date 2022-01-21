@@ -7,70 +7,37 @@ namespace Harmonify
 {
     public class Chord
     {
-        public int root;
-        public ChordStack chordStack;
-        public EChordFunction eChordFunction;
-        //public bool major;
-        public List<int> chordNotes = new List<int>();
+        public int Root { get; private set; }
+        public ChordStack ChordStack { get; private set; }
+        public EChordFunction EChordFunction { get; private set; }
+
+        public int[] chordNotes;
         public int match;
         public bool isSecondaryDominant;
-
+        private const int CHORD_TONE_MATCH = 5;
+        private const int AVOID_NOTE_MATCH = -3;
+        private const int AVAILABLE_TENSION_MATCH = 2;
+        private const int DIATONIC_MATCH = 1;
+        private const int NONDIATONIC_MATCH = 0;
+        private const int MINOR_SECOND_CRASH = -3;
         public string GetChordNotation()
         {
-            return Note.GetNoteName(root) + ChordPrototype.GetStackNotation(chordStack.EStackType);
+            return Note.GetNoteName(Root) + ChordPrototype.GetStackNotation(ChordStack.EStackType);
         }
-        
 
-        private static List<int> GetPossibleTriad(List<int> notes)
+        public Chord(ChordStack chordStack, EChordFunction eChordFunction, int root)
         {
-            // 그자체로 Triad
-            if (IsThirdStacked(notes))
+            ChordStack = chordStack;
+            EChordFunction = eChordFunction;
+            Root = root;
+            chordNotes = new int[ChordStack.chordNotes.Count];
+            for(int i = 0; i < chordNotes.Length; i++)
             {
-                return notes;
+                chordNotes[i] = root + ChordStack.chordNotes[i];
             }
-            else
-            {
-                // 노트 갯수만큼 inverse 해봄
-                for (int i = 0; i < notes.Count; i++)
-                {
-                    Inverse(notes);
-                    if (IsThirdStacked(notes))
-                    {
-                        return notes;
-                    }
-                }
-                // 그래도 안되면 Null.
-                return null;
-
-            }
-
         }
 
-        public static void Inverse(List<int> notes)
-        {
-            int firstNote = notes[0];
-            notes.RemoveAt(0);
-            notes.Add(firstNote);
-        }
-
-        public static bool IsThirdStacked(List<int> notes)
-        {
-            for (int i = 0; i < notes.Count - 1; i++)
-            {
-                int interval = notes[i + 1] - notes[i];
-                if (interval < 0)
-                {
-                    interval += 12;
-                }
-                if (interval != 3 && interval != 4)
-                {
-                    return false;
-                }
-            }
-            return true;
-        }
-
-        public static int Match(KeySignature keySignature, int note, List<int> chordNotes)
+        public static int Match(KeySignature keySignature, int note, int[] chordNotes)
         {
             note %= 12;
             int mode = note - keySignature.TonicNote;
@@ -85,28 +52,39 @@ namespace Harmonify
             }
             List<int> avoidNotes = GetAvoidNotes(keySignature.TonicNote, mode);
             List<int> availableTensions = GetAvailableTensions(keySignature.TonicNote, mode);
+            // 코드음일 경우
             if (chordNotes.Contains(note))
             {
-                match += 5;
+                match += CHORD_TONE_MATCH;
             }
+            // 어보이드노트일 경우
             else if (avoidNotes.Contains(note))
             {
-                match -= 2;
+                match += AVOID_NOTE_MATCH;
             }
+            // 어베일러블 텐션일 경우
             else if (availableTensions.Contains(note))
             {
-                match += 2;
+                match += AVAILABLE_TENSION_MATCH;
             }
+            // 이도저도 아닌 경우
             else
             {
-                int[] keyNotes = KeySignature.GetKeyNotes(keySignature);
-                if (keyNotes.ToList().Contains(note))
+                if(chordNotes.Contains((note + 1) % 12) || chordNotes.Contains((note - 1) % 12))
                 {
-                    match += 1;
+                    match += MINOR_SECOND_CRASH;
                 }
                 else
                 {
-                    match -= 3;
+                    int[] keyNotes = KeySignature.GetKeyNotes(keySignature);
+                    if (keyNotes.ToList().Contains(note))
+                    {
+                        match += DIATONIC_MATCH;
+                    }
+                    else
+                    {
+                        match += NONDIATONIC_MATCH;
+                    }
                 }
             }
             return match;
@@ -120,15 +98,15 @@ namespace Harmonify
             {
                 // 아이오니안 : F
                 case 0:
-                    avoidNotes.Add((keyRoot + 5) % 12);
+                    avoidNotes.Add((keyRoot + Note.F) % 12);
                     break;
                 // 도리안 : B
                 case 1:
-                    avoidNotes.Add((keyRoot + 11) % 12);
+                    avoidNotes.Add((keyRoot + Note.B) % 12);
                     break;
                 // 프리지안 : F, C
                 case 2:
-                    avoidNotes.Add((keyRoot + 5) % 12);
+                    avoidNotes.Add((keyRoot + Note.F) % 12);
                     avoidNotes.Add(keyRoot);
                     break;
                 // 리디안 : 없음.
@@ -138,7 +116,7 @@ namespace Harmonify
                     break;
                 // 에올리안
                 case 5:
-                    avoidNotes.Add((keyRoot + 5) % 12);
+                    avoidNotes.Add((keyRoot + Note.F) % 12);
                     break;
                 // 로크리안
                 case 6:
@@ -155,38 +133,38 @@ namespace Harmonify
             {
                 // 아이오니안 : D, A
                 case 0:
-                    availableTensions.Add((keyRoot + (int)Note.eNoteName.D) % 12);
-                    availableTensions.Add((keyRoot + (int)Note.eNoteName.A) % 12);
+                    availableTensions.Add((keyRoot + Note.D) % 12);
+                    availableTensions.Add((keyRoot + Note.A) % 12);
                     break;
                 // 도리안 : E, G
                 case 1:
-                    availableTensions.Add((keyRoot + (int)Note.eNoteName.E) % 12);
-                    availableTensions.Add((keyRoot + (int)Note.eNoteName.G) % 12);
+                    availableTensions.Add((keyRoot + Note.E) % 12);
+                    availableTensions.Add((keyRoot + Note.G) % 12);
                     break;
                 // 프리지안 : A
                 case 2:
-                    availableTensions.Add((keyRoot + (int)Note.eNoteName.A) % 12);
+                    availableTensions.Add((keyRoot + Note.A) % 12);
                     break;
                 // 리디안 : G, B, D
                 case 3:
-                    availableTensions.Add((keyRoot + (int)Note.eNoteName.G) % 12);
-                    availableTensions.Add((keyRoot + (int)Note.eNoteName.B) % 12);
-                    availableTensions.Add((keyRoot + (int)Note.eNoteName.D) % 12);
+                    availableTensions.Add((keyRoot + Note.G) % 12);
+                    availableTensions.Add((keyRoot + Note.B) % 12);
+                    availableTensions.Add((keyRoot + Note.D) % 12);
                     break;
                 // 믹솔리디안 : A, E
                 case 4:
-                    availableTensions.Add((keyRoot + (int)Note.eNoteName.A) % 12);
-                    availableTensions.Add((keyRoot + (int)Note.eNoteName.E) % 12);
+                    availableTensions.Add((keyRoot + Note.A) % 12);
+                    availableTensions.Add((keyRoot + Note.E) % 12);
                     break;
                 // 애올리안 : B, D
                 case 5:
-                    availableTensions.Add((keyRoot + (int)Note.eNoteName.B) % 12);
-                    availableTensions.Add((keyRoot + (int)Note.eNoteName.D) % 12);
+                    availableTensions.Add((keyRoot + Note.B) % 12);
+                    availableTensions.Add((keyRoot + Note.D) % 12);
                     break;
                 // 로크리안 : E, G
                 case 6:
-                    availableTensions.Add((keyRoot + (int)Note.eNoteName.E) % 12);
-                    availableTensions.Add((keyRoot + (int)Note.eNoteName.G) % 12);
+                    availableTensions.Add((keyRoot + Note.E) % 12);
+                    availableTensions.Add((keyRoot + Note.G) % 12);
                     break;
             }
             return availableTensions;

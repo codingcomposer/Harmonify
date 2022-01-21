@@ -118,12 +118,7 @@ namespace Harmonify
             int[] keyNotes = KeySignature.GetKeyNotes(keySignature);
             for(int i = 0; i < chordStacks.Count; i++)
             {
-                Chord chord = new Chord();
-                chord.root = keyNotes[(int)eChordFunction];
-                chord.eChordFunction = eChordFunction;
-                chord.chordStack = chordStacks[i];
-                chord.chordNotes.Add(chord.root);
-                chord.chordNotes.AddRange(chordStacks[i].chordNotes);
+                Chord chord = new Chord(chordStacks[i], eChordFunction, keyNotes[(int)eChordFunction]);
                 chords.Add(chord);
             }
             return chords;

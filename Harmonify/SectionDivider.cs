@@ -46,7 +46,7 @@ namespace Harmonify
                     if (!measures[i - 1].NoteExists())
                     {
                         // 못갖춘마디가 아니면 새 섹션
-                        addNew = i + 1 < measures.Count && !measures[i].IsIncompleteMeasure(measures[i + 1]);
+                        addNew = i + 1 < measures.Count && !measures[i].IsIncomplete;
                     }
                     //있은지 여러번이면
                     else
@@ -60,7 +60,7 @@ namespace Harmonify
                         else if (i > 1)
                         {
                             // 전전마디가 비어있으면서 이전 마디가 못갖춘마디면 새섹션
-                            addNew = !measures[i - 2].NoteExists() && measures[i - 1].IsIncompleteMeasure(measures[i]);
+                            addNew = !measures[i - 2].NoteExists() && measures[i - 1].IsIncomplete;
                         }
                     }
                 }
@@ -115,13 +115,13 @@ namespace Harmonify
                     }
                 }
                 // 노트가 있고, 못갖춘 마디가 아닌 경우에 대해서
-                else if (measures[measureIndex].NoteExists() && !measures[measureIndex].IsIncompleteMeasure(measures[measureIndex + 1]))
+                else if (measures[measureIndex].NoteExists() && !measures[measureIndex].IsIncomplete)
                 {
                     // 짧은 섹션이라면
                     if (GetLengthOfSection(measureIndex) < 4)
                     {
                         // 이전 마디가 있고, 이전 마디가 못갖춘마디가 아닌 경우
-                        if (measureIndex > 0 && measures[measureIndex - 1].NoteExists() && !measures[measureIndex - 1].IsIncompleteMeasure(measures[measureIndex + 1]))
+                        if (measureIndex > 0 && measures[measureIndex - 1].NoteExists() && !measures[measureIndex - 1].IsIncomplete)
                         {
                             // 이전에 붙임.
                             int nextIndex = GetNextSectionIndex(measureIndex);

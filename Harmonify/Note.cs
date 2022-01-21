@@ -13,6 +13,20 @@ namespace Harmonify
         public string noteName;
         public enum eNoteName { C, Csharp, D, Dsharp, E, F, Fsharp, G, Gsharp, A, Asharp, B };
 
+        public const int C = 0;
+        public const int CsDb = 1;
+        public const int D = 2;
+        public const int DsEb = 3;
+        public const int E = 4;
+        public const int F = 5;
+        public const int FsGb = 6;
+        public const int G = 7;
+        public const int GsAb = 8;
+        public const int A = 9;
+        public const int AsBb = 10;
+        public const int B = 11;
+        public const int OCTAVE_CHROMATIC = 12;
+
         public Note(int _noteNumber, int _onTime, int _offTime)
         {
             noteNumber = _noteNumber;
@@ -27,9 +41,10 @@ namespace Harmonify
             noteNumber = note.noteNumber;
             onTime = note.onTime;
             offTime = note.offTime;
-            length = offTime - onTime;
-            noteName = GetNoteName(noteNumber);
+            length = note.length;
+            noteName = note.noteName;
         }
+        
         public static string GetNoteName(int noteNumber)
         {
             return ((eNoteName)((noteNumber) % 12)).ToString().Replace("sharp", "#");

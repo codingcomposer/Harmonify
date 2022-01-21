@@ -102,16 +102,6 @@ namespace Harmonify
             return majority == Majority.naturalMinor || majority == Majority.harmonicMinor || majority == Majority.melodicMinor;
         }
 
-        public static List<int> GetDominant(KeySignature key, int noteCount)
-        {
-            List<int> chordNotes = new List<int>();
-            int[] keyNotes = GetKeyNotes(key);
-            for (int i = 0; i < noteCount; i++)
-            {
-                chordNotes.Add(keyNotes[(4 + i * 2) % 7]);
-            }
-            return chordNotes;
-        }
 
         private List<KeySignature> GetRelativeKeys(KeySignature originalKey)
         {
@@ -155,17 +145,17 @@ namespace Harmonify
         }
 
 
-        public static List<KeySignature> AssumeKeys(Section section)
+        public static List<KeySignature> AssumeKeys(List<Measure> measures, List<Note> notes)
         {
             List<KeySignature> result = new List<KeySignature>();
             // 전체 마디에서 음들의 경중을 따짐.
             int[] weightedNotes = new int[12];
-            for (int i = 0; i < section.measures.Count; i++)
+            for (int i = 0; i < measures.Count; i++)
             {
-                for (int j = 0; j < section.measures[i].notes.Count; j++)
+                for (int j = 0; j < measures[i].notes.Count; j++)
                 {
 
-                    weightedNotes[section.measures[i].notes[j].noteNumber % 12] += section.measures[i].notes[j].length;
+                    weightedNotes[measures[i].notes[j].noteNumber % 12] += measures[i].notes[j].length;
                 }
             }
             List<Tuple<int, int>> tuples = new List<Tuple<int, int>>();
@@ -194,10 +184,11 @@ namespace Harmonify
                 presentedNotes.Add(tuples[i].Item1);
             }
             presentedNotes.Sort();
+            
             List<KeySignature> assumedKeys = AssumeKeysFromNotes(presentedNotes);
             
             // 마지막 노트는 섹션의 마지막 마디의 노트 중 마지막것이다.
-            int lastNote = section.measures[section.measures.Count - 1].notes[section.measures[section.measures.Count - 1].notes.Count - 1].noteNumber;
+            int lastNote = notes[notes.Count - 1].noteNumber;
 
             // 등장한 음으로 예상한 키 중
             for (int i = 0; i < assumedKeys.Count; i++)
@@ -233,7 +224,7 @@ namespace Harmonify
             int sameNotes = count;
             for (int i = 0; i < count; i++)
             {
-                if (keyNotes[i] != notes[i])
+                if (!keyNotes.Contains(notes[i]))
                 {
                     sameNotes--;
                 }

@@ -122,36 +122,7 @@ namespace Harmonify
                 textBox1.Text += "Key Signature : " + Note.GetNoteName(song.KeySignature.TonicNote);
             }
             textBox1.Text += "\r\n";
-            for (int i = 0; i < song.sections.Count; i++)
-            {
-                textBox1.Text += "\r\n" + i.ToString() + ":";
-                for (int j = 0; j < song.sections[i].measures.Count; j++)
-                {
-                    if(song.sections[i].measures[j].chords.Count > 0)
-                    {
-                        for (int k = 0; k < song.sections[i].measures[j].chords.Count; k++)
-                        {
-                            if (song.sections[i].measures[j].chords[k].chordNotes.Count > 0)
-                            {
-                                textBox1.Text += song.sections[i].measures[j].chords[k].GetChordNotation();
-                            }
-                            else
-                            {
-                                textBox1.Text += "-";
-                            }
-                        }
-                    }
-                    else
-                    {
-                        textBox1.Text += "-";
-                    }
-                    textBox1.Text += "|";
-                    if(j % 8 == 7)
-                    {
-                        textBox1.Text += "\r\n";
-                    }
-                }
-            }
+            textBox1.Text += song.PrintChords();
         }
         private void KeyRootComboBox_SelectedIndexChanged(object sender, EventArgs e)
         {

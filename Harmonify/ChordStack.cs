@@ -12,18 +12,6 @@ namespace Harmonify
         public int StackCount { get; private set; }
 
         public List<int> chordNotes = new List<int>();
-        const int CsDb = 1;
-        const int D = 2;
-        const int DsEb = 3;
-        const int E = 4;
-        const int F = 5;
-        const int FsGb = 6;
-        const int G = 7;
-        const int GsAb = 8;
-        const int A = 9;
-        const int AsBb = 10;
-        const int B = 11;
-        const int OCTAVE_CHROMATIC = 12;
         public ChordStack(EStackType eStackType)
         {
             EStackType = eStackType;
@@ -63,187 +51,187 @@ namespace Harmonify
             switch (eStackType)
             {
                 case EStackType.maj:
-                    stackingNotes.Add(E);
-                    stackingNotes.Add(G);
+                    stackingNotes.Add(Note.E);
+                    stackingNotes.Add(Note.G);
                     break;
                 case EStackType.min:
-                    stackingNotes.Add(DsEb);
-                    stackingNotes.Add(G);
+                    stackingNotes.Add(Note.DsEb);
+                    stackingNotes.Add(Note.G);
                     break;
                 case EStackType.aug:
-                    stackingNotes.Add(E);
-                    stackingNotes.Add(GsAb);
+                    stackingNotes.Add(Note.E);
+                    stackingNotes.Add(Note.GsAb);
                     break;
                 case EStackType.dim:
-                    stackingNotes.Add(DsEb);
-                    stackingNotes.Add(FsGb);
+                    stackingNotes.Add(Note.DsEb);
+                    stackingNotes.Add(Note.FsGb);
                     break;
                 case EStackType.sus:
-                    stackingNotes.Add(F);
-                    stackingNotes.Add(G);
+                    stackingNotes.Add(Note.F);
+                    stackingNotes.Add(Note.G);
                     break;
                 case EStackType.maj7:
                     stackingNotes.AddRange(GetStackingNotes(EStackType.maj));
-                    stackingNotes.Add(B);
+                    stackingNotes.Add(Note.B);
                     break;
                 case EStackType._7:
                     stackingNotes.AddRange(GetStackingNotes(EStackType.maj));
-                    stackingNotes.Add(AsBb);
+                    stackingNotes.Add(Note.AsBb);
                     break;
                 case EStackType.min7:
                     stackingNotes.AddRange(GetStackingNotes(EStackType.min));
-                    stackingNotes.Add(AsBb);
+                    stackingNotes.Add(Note.AsBb);
                     break;
                 case EStackType.mM7:
                     stackingNotes.AddRange(GetStackingNotes(EStackType.min));
-                    stackingNotes.Add(B);
+                    stackingNotes.Add(Note.B);
                     break;
                 case EStackType.dim7: // 도 미b 솔b 시bb
                     stackingNotes.AddRange(GetStackingNotes(EStackType.dim));
-                    stackingNotes.Add(A);
+                    stackingNotes.Add(Note.A);
                     break;
                 case EStackType.dimMaj7: // 도 미b 솔b 시
                     stackingNotes.AddRange(GetStackingNotes(EStackType.dim));
-                    stackingNotes.Add(B);
+                    stackingNotes.Add(Note.B);
                     break;
                 case EStackType.m7b5: // 도 미b 솔b 시b
                     stackingNotes.AddRange(GetStackingNotes(EStackType.dim));
-                    stackingNotes.Add(AsBb);
+                    stackingNotes.Add(Note.AsBb);
                     break;
                 case EStackType.aug7: // 도 미 솔# 시b
                     stackingNotes.AddRange(GetStackingNotes(EStackType.aug));
-                    stackingNotes.Add(AsBb);
+                    stackingNotes.Add(Note.AsBb);
                     break;
                 case EStackType.maj7s5: // 도 미 솔# 시
                     stackingNotes.AddRange(GetStackingNotes(EStackType.aug));
-                    stackingNotes.Add(B);
+                    stackingNotes.Add(Note.B);
                     break;
                 case EStackType._7sus4: // 도 파 솔 시b
                     stackingNotes.AddRange(GetStackingNotes(EStackType.sus));
-                    stackingNotes.Add(B);
+                    stackingNotes.Add(Note.B);
                     break;
                 case EStackType.maj6: // 도 미 솔 라
                     stackingNotes.AddRange(GetStackingNotes(EStackType.maj));
-                    stackingNotes.Add(A);
+                    stackingNotes.Add(Note.A);
                     break;
                 case EStackType.min6: // 도 미b 솔 라
                     stackingNotes.AddRange(GetStackingNotes(EStackType.min));
-                    stackingNotes.Add(A);
+                    stackingNotes.Add(Note.A);
                     break;
                 case EStackType.maj9: // 도 미 솔 시 레
                     stackingNotes.AddRange(GetStackingNotes(EStackType.maj7));
-                    stackingNotes.Add(D + OCTAVE_CHROMATIC);
+                    stackingNotes.Add(Note.D + Note.OCTAVE_CHROMATIC);
                     break;
                 case EStackType._9: // 도 미 솔 시b 레
                     stackingNotes.AddRange(GetStackingNotes(EStackType._7));
-                    stackingNotes.Add(D + OCTAVE_CHROMATIC);
+                    stackingNotes.Add(Note.D + Note.OCTAVE_CHROMATIC);
                     break;
                 case EStackType.s9: // 도 미 솔 시b 레#
                     stackingNotes.AddRange(GetStackingNotes(EStackType._7));
-                    stackingNotes.Add(DsEb + OCTAVE_CHROMATIC);
+                    stackingNotes.Add(Note.DsEb + Note.OCTAVE_CHROMATIC);
                     break;
                 case EStackType.b9: // 도 미 솔 시b 레b
                     stackingNotes.AddRange(GetStackingNotes(EStackType._7));
-                    stackingNotes.Add(CsDb + OCTAVE_CHROMATIC);
+                    stackingNotes.Add(Note.CsDb + Note.OCTAVE_CHROMATIC);
                     break;
                 case EStackType.min9: // 도 미b 솔 시b 레
                     stackingNotes.AddRange(GetStackingNotes(EStackType.min7));
-                    stackingNotes.Add(D + OCTAVE_CHROMATIC);
+                    stackingNotes.Add(Note.D + Note.OCTAVE_CHROMATIC);
                     break;
                 case EStackType.augMaj9: // 도 미 솔# 시 레
                     stackingNotes.AddRange(GetStackingNotes(EStackType.maj7s5));
-                    stackingNotes.Add(D + OCTAVE_CHROMATIC);
+                    stackingNotes.Add(Note.D + Note.OCTAVE_CHROMATIC);
                     break;
                 case EStackType.aug9: // 도 미 솔# 시b 레
                     stackingNotes.AddRange(GetStackingNotes(EStackType.aug7));
-                    stackingNotes.Add(D + OCTAVE_CHROMATIC);
+                    stackingNotes.Add(Note.D + Note.OCTAVE_CHROMATIC);
                     break;
                 case EStackType.m9b5: // 도 미b 솔b 시b 레
                     stackingNotes.AddRange(GetStackingNotes(EStackType.m7b5));
-                    stackingNotes.Add(D + OCTAVE_CHROMATIC);
+                    stackingNotes.Add(Note.D + Note.OCTAVE_CHROMATIC);
                     break;
                 case EStackType.mb9b5: // 도 미b 솔b 시b 레b
                     stackingNotes.AddRange(GetStackingNotes(EStackType.m9b5));
-                    stackingNotes.Add(CsDb + OCTAVE_CHROMATIC);
+                    stackingNotes.Add(Note.CsDb + Note.OCTAVE_CHROMATIC);
                     break;
                 case EStackType.dim9: // 도 미b 솔b 시bb 레
                     stackingNotes.AddRange(GetStackingNotes(EStackType.dim7));
-                    stackingNotes.Add(D + OCTAVE_CHROMATIC);
+                    stackingNotes.Add(Note.D + Note.OCTAVE_CHROMATIC);
                     break;
                 case EStackType.dimb9: // 도 미b 솔b 시bb 레b
                     stackingNotes.AddRange(GetStackingNotes(EStackType.dim7));
-                    stackingNotes.Add(CsDb + OCTAVE_CHROMATIC);
+                    stackingNotes.Add(Note.CsDb + Note.OCTAVE_CHROMATIC);
                     break;
                 case EStackType.maj11: // 도 미 솔 시 레 파
                     stackingNotes.AddRange(GetStackingNotes(EStackType.maj9));
-                    stackingNotes.Add(F + OCTAVE_CHROMATIC);
+                    stackingNotes.Add(Note.F + Note.OCTAVE_CHROMATIC);
                     break;
                 case EStackType._11: // 도 미 솔 시b 레 파
                     stackingNotes.AddRange(GetStackingNotes(EStackType._9));
-                    stackingNotes.Add(F + OCTAVE_CHROMATIC);
+                    stackingNotes.Add(Note.F + Note.OCTAVE_CHROMATIC);
                     break;
                 case EStackType.s11: // 도 미 솔 시b 레 파#
                     stackingNotes.AddRange(GetStackingNotes(EStackType._9));
-                    stackingNotes.Add(FsGb + OCTAVE_CHROMATIC);
+                    stackingNotes.Add(Note.FsGb + Note.OCTAVE_CHROMATIC);
                     break;
                 case EStackType.min11: // 도 미b 솔 시b 레 파
                     stackingNotes.AddRange(GetStackingNotes(EStackType.min9));
-                    stackingNotes.Add(F + OCTAVE_CHROMATIC);
+                    stackingNotes.Add(Note.F + Note.OCTAVE_CHROMATIC);
                     break;
                 case EStackType.augMaj11: // 도 미 솔# 시 레 파
                     stackingNotes.AddRange(GetStackingNotes(EStackType.augMaj9));
-                    stackingNotes.Add(F + OCTAVE_CHROMATIC);
+                    stackingNotes.Add(Note.F + Note.OCTAVE_CHROMATIC);
                     break;
                 case EStackType._11s5: // 도 미 솔# 시b 레 파
                     stackingNotes.AddRange(GetStackingNotes(EStackType.aug9));
-                    stackingNotes.Add(F + OCTAVE_CHROMATIC);
+                    stackingNotes.Add(Note.F + Note.OCTAVE_CHROMATIC);
                     break;
                 case EStackType._11b5: // 도 미 솔b 시b 레 파
-                    stackingNotes.Add(E);
-                    stackingNotes.Add(FsGb);
-                    stackingNotes.Add(AsBb);
-                    stackingNotes.Add(D + OCTAVE_CHROMATIC);
-                    stackingNotes.Add(F + OCTAVE_CHROMATIC);
+                    stackingNotes.Add(Note.E);
+                    stackingNotes.Add(Note.FsGb);
+                    stackingNotes.Add(Note.AsBb);
+                    stackingNotes.Add(Note.D + Note.OCTAVE_CHROMATIC);
+                    stackingNotes.Add(Note.F + Note.OCTAVE_CHROMATIC);
                     break;
                 case EStackType.dim11: // 도 미b 솔b 시bb 레 파
                     stackingNotes.AddRange(GetStackingNotes(EStackType.dim9));
-                    stackingNotes.Add(F + OCTAVE_CHROMATIC);
+                    stackingNotes.Add(Note.F + Note.OCTAVE_CHROMATIC);
                     break;
                 case EStackType.maj13: // 도 미 솔 시 레 파 라
                     stackingNotes.AddRange(GetStackingNotes(EStackType.maj11));
-                    stackingNotes.Add(F + OCTAVE_CHROMATIC);
+                    stackingNotes.Add(Note.F + Note.OCTAVE_CHROMATIC);
                     break;
                 case EStackType._13: // 도 미 솔 시b 레 파 라
                     stackingNotes.AddRange(GetStackingNotes(EStackType._11));
-                    stackingNotes.Add(A + OCTAVE_CHROMATIC);
+                    stackingNotes.Add(Note.A + Note.OCTAVE_CHROMATIC);
                     break;
                 case EStackType._13s11: // 도 미 솔 시b 레 파# 라
                     stackingNotes.AddRange(GetStackingNotes(EStackType.s11));
-                    stackingNotes.Add(A + OCTAVE_CHROMATIC);
+                    stackingNotes.Add(Note.A + Note.OCTAVE_CHROMATIC);
                     break;
                 case EStackType.b13: // 도 미 솔 시b 레 파 라b
                     stackingNotes.AddRange(GetStackingNotes(EStackType._11));
-                    stackingNotes.Add(GsAb + OCTAVE_CHROMATIC);
+                    stackingNotes.Add(Note.GsAb + Note.OCTAVE_CHROMATIC);
                     break;
                 case EStackType.b13s11: // 도 미 솔 시b 레 파# 라b
                     stackingNotes.AddRange(GetStackingNotes(EStackType.s11));
-                    stackingNotes.Add(GsAb + OCTAVE_CHROMATIC);
+                    stackingNotes.Add(Note.GsAb + Note.OCTAVE_CHROMATIC);
                     break;
                 case EStackType.min13: // 도 미b 솔 시b 레 파 라
                     stackingNotes.AddRange(GetStackingNotes(EStackType.min11));
-                    stackingNotes.Add(A + OCTAVE_CHROMATIC);
+                    stackingNotes.Add(Note.A + Note.OCTAVE_CHROMATIC);
                     break;
                 case EStackType.augmaj13: // 도 미 솔# 시 레 파 라
                     stackingNotes.AddRange(GetStackingNotes(EStackType.augMaj11));
-                    stackingNotes.Add(A + OCTAVE_CHROMATIC);
+                    stackingNotes.Add(Note.A + Note.OCTAVE_CHROMATIC);
                     break;
                 case EStackType._13s5: // 도 미 솔# 시b 레 파 라
                     stackingNotes.AddRange(GetStackingNotes(EStackType._11s5));
-                    stackingNotes.Add(A + OCTAVE_CHROMATIC);
+                    stackingNotes.Add(Note.A + Note.OCTAVE_CHROMATIC);
                     break;
                 case EStackType._13b5: // 도 미b 솔b시b 레 파 라
                     stackingNotes.AddRange(GetStackingNotes(EStackType._11b5));
-                    stackingNotes.Add(A + OCTAVE_CHROMATIC);
+                    stackingNotes.Add(Note.A + Note.OCTAVE_CHROMATIC);
                     break;
 
             }
