@@ -8,6 +8,5 @@ namespace Harmonify
     {
         public string sectionName;
         public List<Measure> measures = new List<Measure>();
-
     }
 }

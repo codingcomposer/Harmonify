@@ -1,9 +1,8 @@
 {
   "runtimeOptions": {
     "additionalProbingPaths": [
-      "C:\\Users\\Overclock-1\\.dotnet\\store\\|arch|\\|tfm|",
-      "C:\\Users\\Overclock-1\\.nuget\\packages",
-      "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
+      "C:\\Users\\Dongwoo\\.dotnet\\store\\|arch|\\|tfm|",
+      "C:\\Users\\Dongwoo\\.nuget\\packages"
     ]
   }
 }
