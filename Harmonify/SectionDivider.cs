@@ -162,7 +162,7 @@ namespace Harmonify
                     int comparisonSectionIndex = originalSectionIndex;
                     for (int comparisonIndex = originalIndex + 4; comparisonIndex < nextIndex; comparisonIndex++)
                     {
-                        int checkSimilarity = Measure.CheckSimilarity(measures[originalIndex], measures[comparisonIndex]);
+                        int checkSimilarity = CheckSimilarity(measures[originalIndex], measures[comparisonIndex]);
                         // 비슷하면
                         if (checkSimilarity == 0)
                         {
@@ -222,6 +222,58 @@ namespace Harmonify
                 originalStartIndex = originalIndex;
             }
         }
+        private int CheckSimilarity(Measure a, Measure b)
+        {
+            int[,] notes = new int[a.notes.Count + 1, b.notes.Count + 1];
+            for (int i = 0; i < notes.GetLength(0); i++)
+            {
+                notes[i, 0] = 0;
+            }
+            for (int i = 0; i < notes.GetLength(1); i++)
+            {
+                notes[0, i] = 0;
+            }
+            int cost = 0;
+            int addNum, minusNum, modiNum;
+            for (int i = 1; i < notes.GetLength(0); i++)
+            {
+                for (int j = 1; j < notes.GetLength(1); j++)
+                {
+                    if (a.notes[i - 1].noteNumber != b.notes[j - 1].noteNumber)
+                    {
+                        cost = 1;
+                    }
+                    else
+                    {
+                        cost = 0;
+                    }
+                    addNum = notes[i - 1, j] + 1;
+                    minusNum = notes[i, j - 1] + 1;
+                    modiNum = notes[i - 1, j - 1] + cost;
+                    notes[i, j] = Min(addNum, minusNum, modiNum);
+                }
+            }
+            return notes[notes.GetLength(0) - 1, notes.GetLength(1) - 1];
+        }
+
+        private static int Min(int a, int b, int c)
+        {
+            int min = int.MaxValue;
+            if (a < min)
+            {
+                min = a;
+            }
+            if (b < min)
+            {
+                min = b;
+            }
+            if (c < min)
+            {
+                min = c;
+            }
+            return min;
+        }
+
 
         private int GetBiggestSectionIndex()
         {

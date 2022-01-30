@@ -26,16 +26,6 @@ namespace Harmonify
             System.Windows.Forms.MessageBox.Show(str);
         }
 
-        private static void Log(List<int> ints)
-        {
-            string str = null;
-            for (int i = 0; i < ints.Count; i++)
-            {
-                str += ints[i];
-            }
-            System.Windows.Forms.MessageBox.Show(str);
-        }
-
         public int GetKeyDistance(int to)
         {
             int sharpDistance = 0;

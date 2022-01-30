@@ -45,6 +45,11 @@ namespace Harmonify
             chordNotes.AddRange(GetStackingNotes(eStackType));
         }
 
+        public override string ToString()
+        {
+            return ChordPrototype.GetStackNotation(EStackType);
+        }
+
         private List<int> GetStackingNotes(EStackType eStackType)
         {
             List<int> stackingNotes = new List<int>();

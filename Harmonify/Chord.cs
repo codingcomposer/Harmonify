@@ -20,11 +20,11 @@ namespace Harmonify
         private const int DIATONIC_MATCH = 1;
         private const int NONDIATONIC_MATCH = 0;
         private const int MINOR_SECOND_CRASH = -3;
-        public string GetChordNotation()
-        {
-            return Note.GetNoteName(Root) + ChordPrototype.GetStackNotation(ChordStack.EStackType);
-        }
 
+        public override string ToString()
+        {
+            return Note.GetNoteName(Root) + ChordStack.ToString();
+        }
         public Chord(ChordStack chordStack, EChordFunction eChordFunction, int root)
         {
             ChordStack = chordStack;

@@ -7,13 +7,19 @@ namespace Harmonify
     public class Measure
     {
         public int index;
-        public List<Note> notes = new List<Note>();
+        public readonly List<Note> notes = new List<Note>();
         public List<Chord> chords = new List<Chord>();
+        public List<Chord> candidateChords = new List<Chord>();
         public bool IsIncomplete { get; private set; }
         public int section;
         public int[] noteWeights = new int[12];
+        public List<int> presentedNotes = new List<int>();
+        public int[] firstHalfNoteWeights = new int[12];
+        public int[] secondHalfNoteWeights = new int[12];
+        public int NoteWeightsSum { get; private set; }
         public Measure PrevMeasure { get; private set; }
         public Measure NextMeasure { get; private set; }
+        public int chordCount;
         public string NoteNames 
         { 
             get 
@@ -62,9 +68,44 @@ namespace Harmonify
             {
                 noteWeights[i] = 0;
             }
+            int halfTick = GetFirstTick() + (GetLastTick() - GetFirstTick() / 2);
             for (int i = 0; i < notes.Count; i++)
             {
-                noteWeights[notes[i].noteNumber % 12] += notes[i].length;
+                int weight = notes[i].length;
+                if (notes[i].onTime == GetFirstTick())
+                {
+                    weight = (int)(weight * 2f);
+                }
+                else if (notes[i].onTime == GetFirstTick() + (halfTick - (GetFirstTick()) / 2))
+                {
+                    weight = (int)(weight * 1.2f);
+                }
+                else if (notes[i].onTime == halfTick)
+                {
+                    weight = (int)(weight * 1.5f);
+                }
+                noteWeights[notes[i].noteNumber % 12] += weight;
+                if(notes[i].offTime <= halfTick)
+                {
+                    firstHalfNoteWeights[notes[i].noteNumber % 12] += weight;
+                }
+                else if(notes[i].onTime >= halfTick)
+                {
+                    secondHalfNoteWeights[notes[i].noteNumber % 12] += weight;
+                }
+                else
+                {
+                    firstHalfNoteWeights[notes[i].noteNumber % 12] += (halfTick - notes[i].onTime);
+                    secondHalfNoteWeights[notes[i].noteNumber % 12] += (notes[i].offTime - halfTick);
+                }
+                NoteWeightsSum += notes[i].length;
+            }
+            for(int i = 0; i < noteWeights.Length; i++)
+            {
+                if(noteWeights[i] > 0)
+                {
+                    presentedNotes.Add(i);
+                }
             }
         }
 
@@ -115,58 +156,6 @@ namespace Harmonify
         public int GetFirstTick()
         {
             return Song.MidiFile.TicksPerQuarterNote * Song.TimeSigTop * index;
-        }
-
-        public static int CheckSimilarity(Measure a, Measure b)
-        {
-            int[,] notes = new int[a.notes.Count + 1, b.notes.Count + 1];
-            for(int i = 0; i < notes.GetLength(0); i++)
-            {
-                notes[i, 0] = 0;
-            }
-            for(int i = 0; i < notes.GetLength(1); i++)
-            {
-                notes[0, i] = 0;
-            }
-            int cost = 0;
-            int addNum, minusNum, modiNum;
-            for(int i = 1; i < notes.GetLength(0); i++)
-            {
-                for(int j = 1; j < notes.GetLength(1); j++)
-                {
-                    if(a.notes[i - 1].noteNumber != b.notes[j - 1].noteNumber)
-                    {
-                        cost = 1;
-                    }
-                    else
-                    {
-                        cost = 0;
-                    }
-                    addNum = notes[i - 1, j] + 1;
-                    minusNum = notes[i, j - 1] + 1;
-                    modiNum = notes[i - 1, j - 1] + cost;
-                    notes[i, j] = Min(addNum, minusNum, modiNum);
-                }
-            }
-            return notes[notes.GetLength(0) - 1, notes.GetLength(1) - 1];
-        }
-
-        private static int Min(int a, int b, int c)
-        {
-            int min = int.MaxValue;
-            if(a < min)
-            {
-                min = a;
-            }
-            if(b < min)
-            {
-                min = b;
-            }
-            if(c < min)
-            {
-                min = c;
-            }
-            return min;
         }
 
         private int GetLastTick()

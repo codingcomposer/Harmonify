@@ -93,7 +93,7 @@ namespace Harmonify
                         {
                             if (sections[i].measures[j].chords[k].chordNotes.Length > 0)
                             {
-                                result += sections[i].measures[j].chords[k].GetChordNotation();
+                                result += sections[i].measures[j].chords[k].ToString();
                             }
                             else
                             {
@@ -159,7 +159,6 @@ namespace Harmonify
         {
             new SectionDivider().Divide(measures);
             InstantiateSections();
-            PrintNotes();
         }
 
         private void InstantiateSections()
@@ -187,11 +186,7 @@ namespace Harmonify
                 noteString += sections[i].sectionName + ":";
                 for (int j = 0; j < sections[i].measures.Count; j++)
                 {
-                    for (int k = 0; k < sections[i].measures[j].notes.Count; k++)
-                    {
-                        noteString += Note.GetNoteName(sections[i].measures[j].notes[k].noteNumber);
-                    }
-                    noteString += "|";
+                    noteString += sections[i].measures[j].NoteNames + "|";
                 }
                 noteString += "\r\n";
             }

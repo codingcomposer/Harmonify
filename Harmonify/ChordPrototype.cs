@@ -51,6 +51,7 @@ namespace Harmonify
         augmaj13, // 도 미 솔# 시 레 파 라
         _13s5, // 도 미 솔# 시b 레 파 라
         _13b5, // 도 미b 솔b시b 레 파 라
+
     };
     public class ChordPrototype
     {

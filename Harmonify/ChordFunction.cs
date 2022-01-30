@@ -23,6 +23,20 @@ namespace Harmonify
         private static List<ChordStack> subMediantForMin = new List<ChordStack>();
         private static List<ChordStack> leadingForMaj = new List<ChordStack>();
         private static List<ChordStack> leadingForMin = new List<ChordStack>();
+        private static List<ChordStack> tonic7ForMaj = new List<ChordStack>();
+        private static List<ChordStack> tonic7ForMin = new List<ChordStack>();
+        private static List<ChordStack> superTonic7ForMaj = new List<ChordStack>();
+        private static List<ChordStack> superTonic7ForMin = new List<ChordStack>();
+        private static List<ChordStack> mediant7ForMaj = new List<ChordStack>();
+        private static List<ChordStack> mediant7ForMin = new List<ChordStack>();
+        private static List<ChordStack> subDominant7ForMaj = new List<ChordStack>();
+        private static List<ChordStack> subDominant7ForMin = new List<ChordStack>();
+        private static List<ChordStack> dominant7ForMaj = new List<ChordStack>();
+        private static List<ChordStack> dominant7ForMin = new List<ChordStack>();
+        private static List<ChordStack> subMediant7ForMaj = new List<ChordStack>();
+        private static List<ChordStack> subMediant7ForMin = new List<ChordStack>();
+        private static List<ChordStack> leading7ForMaj = new List<ChordStack>();
+        private static List<ChordStack> leading7ForMin = new List<ChordStack>();
 
 
         private static List<ChordStack> dimSuperTonic = new List<ChordStack>();
@@ -100,6 +114,23 @@ namespace Harmonify
             subMediantForMin.Add(ChordPrototype.GetChordStackOf(EStackType.maj));
             subMediantForMin.Add(ChordPrototype.GetChordStackOf(EStackType.maj7));
             subMediantForMin.Add(ChordPrototype.GetChordStackOf(EStackType.min9));
+
+            // 세븐만 있는거
+            tonic7ForMaj.Add(ChordPrototype.GetChordStackOf(EStackType.maj7));
+            superTonic7ForMaj.Add(ChordPrototype.GetChordStackOf(EStackType.min7));
+            mediant7ForMaj.Add(ChordPrototype.GetChordStackOf(EStackType.min7));
+            subDominant7ForMaj.Add(ChordPrototype.GetChordStackOf(EStackType.maj7));
+            dominant7ForMaj.Add(ChordPrototype.GetChordStackOf(EStackType._7));
+            subMediant7ForMaj.Add(ChordPrototype.GetChordStackOf(EStackType.min7));
+            tonic7ForMin.Add(ChordPrototype.GetChordStackOf(EStackType.min7));
+            superTonic7ForMin.Add(ChordPrototype.GetChordStackOf(EStackType.m7b5));
+            superTonic7ForMin.Add(ChordPrototype.GetChordStackOf(EStackType.min7));
+            mediant7ForMin.Add(ChordPrototype.GetChordStackOf(EStackType.maj7));
+            subDominant7ForMin.Add(ChordPrototype.GetChordStackOf(EStackType.min7));
+            subDominant7ForMin.Add(ChordPrototype.GetChordStackOf(EStackType._7));
+            dominant7ForMin.Add(ChordPrototype.GetChordStackOf(EStackType._7));
+            //dominant7ForMin.Add(ChordPrototype.GetChordStackOf(EStackType.min7));
+            subMediant7ForMin.Add(ChordPrototype.GetChordStackOf(EStackType.maj7));
         }
 
         public static List<Chord> GetAvailableChords(KeySignature keySignature, EChordFunction eChordFunction, int spice)
@@ -122,6 +153,83 @@ namespace Harmonify
                 chords.Add(chord);
             }
             return chords;
+        }
+
+        public static List<Chord> GetAvailable7Chords(KeySignature keySignature, EChordFunction eChordFunction)
+        {
+            List<ChordStack> chordStacks = new List<ChordStack>();
+            chordStacks.AddRange(GetAvailable7ChordStacks(eChordFunction, keySignature.majority == KeySignature.Majority.major));
+            List<Chord> chords = new List<Chord>();
+            int[] keyNotes = KeySignature.GetKeyNotes(keySignature);
+            for (int i = 0; i < chordStacks.Count; i++)
+            {
+                Chord chord = new Chord(chordStacks[i], eChordFunction, keyNotes[(int)eChordFunction]);
+                chords.Add(chord);
+            }
+            return chords;
+        }
+
+        private static List<ChordStack> GetAvailable7ChordStacks(EChordFunction eChordFunction, bool major)
+        {
+            switch (eChordFunction)
+            {
+                case EChordFunction.Tonic:
+                    if (major)
+                    {
+                        return tonic7ForMaj;
+                    }
+                    else
+                    {
+                        return tonic7ForMin;
+                    }
+                case EChordFunction.SuperTonic:
+                    if (major)
+                    {
+                        return superTonic7ForMaj;
+                    }
+                    else
+                    {
+                        return superTonic7ForMin;
+                    }
+                case EChordFunction.Mediant:
+                    if (major)
+                    {
+                        return mediant7ForMaj;
+                    }
+                    else
+                    {
+                        return mediant7ForMin;
+                    }
+                case EChordFunction.SubDominant:
+                    if (major)
+                    {
+                        return subDominant7ForMaj;
+                    }
+                    else
+                    {
+                        return subDominant7ForMin;
+                    }
+                case EChordFunction.Dominant:
+                    if (major)
+                    {
+                        return dominant7ForMaj;
+                    }
+                    else
+                    {
+                        return dominant7ForMin;
+                    }
+                case EChordFunction.SubMediant:
+                    if (major)
+                    {
+                        return subMediant7ForMaj;
+                    }
+                    else
+                    {
+                        return subMediant7ForMin;
+                    }
+                default:
+                    return null;
+            }
         }
         private static List<ChordStack> GetAvailableChordStacks(EChordFunction eChordFunction, bool major)
         {

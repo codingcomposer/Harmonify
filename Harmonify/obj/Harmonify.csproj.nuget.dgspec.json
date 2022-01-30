@@ -1,20 +1,20 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\Dongwoo\\Documents\\GitHub\\Harmonify\\Harmonify\\Harmonify.csproj": {}
+    "C:\\Users\\kdw\\Documents\\GitHub\\Harmonify\\Harmonify\\Harmonify.csproj": {}
   },
   "projects": {
-    "C:\\Users\\Dongwoo\\Documents\\GitHub\\Harmonify\\Harmonify\\Harmonify.csproj": {
+    "C:\\Users\\kdw\\Documents\\GitHub\\Harmonify\\Harmonify\\Harmonify.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\Dongwoo\\Documents\\GitHub\\Harmonify\\Harmonify\\Harmonify.csproj",
+        "projectUniqueName": "C:\\Users\\kdw\\Documents\\GitHub\\Harmonify\\Harmonify\\Harmonify.csproj",
         "projectName": "Harmonify",
-        "projectPath": "C:\\Users\\Dongwoo\\Documents\\GitHub\\Harmonify\\Harmonify\\Harmonify.csproj",
-        "packagesPath": "C:\\Users\\Dongwoo\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\Dongwoo\\Documents\\GitHub\\Harmonify\\Harmonify\\obj\\",
+        "projectPath": "C:\\Users\\kdw\\Documents\\GitHub\\Harmonify\\Harmonify\\Harmonify.csproj",
+        "packagesPath": "C:\\Users\\kdw\\.nuget\\packages\\",
+        "outputPath": "C:\\Users\\kdw\\Documents\\GitHub\\Harmonify\\Harmonify\\obj\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [
-          "C:\\Users\\Dongwoo\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Users\\kdw\\AppData\\Roaming\\NuGet\\NuGet.Config",
           "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
         ],
         "originalTargetFrameworks": [
@@ -26,6 +26,7 @@
         },
         "frameworks": {
           "netcoreapp3.1": {
+            "targetAlias": "netcoreapp3.1",
             "projectReferences": {}
           }
         },
@@ -37,6 +38,7 @@
       },
       "frameworks": {
         "netcoreapp3.1": {
+          "targetAlias": "netcoreapp3.1",
           "imports": [
             "net461",
             "net462",
@@ -55,7 +57,7 @@
               "privateAssets": "none"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\3.1.202\\RuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\5.0.101\\RuntimeIdentifierGraph.json"
         }
       }
     }
