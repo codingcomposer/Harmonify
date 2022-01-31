@@ -82,11 +82,11 @@ namespace Harmonify
                 {
                     weight = (int)(weight * 2f);
                 }
-                else if (notes[i].onTime == FirstBeatTick + (halfTick - FirstBeatTick / 2))
+                else if (notes[i].onTime <= SecondBeatTick && notes[i].offTime > SecondBeatTick)
                 {
                     weight = (int)(weight * 1.2f);
                 }
-                else if (notes[i].onTime == halfTick)
+                else if (notes[i].onTime <= ThirdBeatTick && notes[i].offTime > ThirdBeatTick)
                 {
                     weight = (int)(weight * 1.5f);
                 }

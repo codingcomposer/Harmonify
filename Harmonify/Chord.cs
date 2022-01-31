@@ -15,10 +15,11 @@ namespace Harmonify
         public int match;
         public bool isSecondaryDominant;
         private const int CHORD_TONE_MATCH = 5;
-        private const int AVOID_NOTE_MATCH = -3;
-        private const int AVAILABLE_TENSION_MATCH = 2;
+        private const int AVOID_NOTE_MATCH = -5;
+        private const int AVAILABLE_TENSION_MATCH = 3;
+        private const int NONDIATONIC_AVAILABLE_TENSION_MATCH = 1;
         private const int DIATONIC_MATCH = 1;
-        private const int NONDIATONIC_MATCH = -5;
+        private const int NONDIATONIC_MATCH = -10;
 
         public override string ToString()
         {
@@ -39,7 +40,11 @@ namespace Harmonify
         public static int Match(KeySignature keySignature, int note, int[] chordNotes)
         {
             note %= 12;
-            int mode = note - keySignature.TonicNote;
+            int mode = chordNotes[0] - keySignature.TonicNote;
+            for(int i = 0; i < chordNotes.Length; i++)
+            {
+                chordNotes[i] %= 12;
+            }
             if(KeySignature.IsMinor(keySignature.majority))
             {
                 mode += 5;
@@ -50,6 +55,7 @@ namespace Harmonify
                 mode += 7;
             }
             List<int> avoidNotes = GetAvoidNotes(keySignature.TonicNote, mode);
+            List<int> nonDiatonicAvailableTensions = GetNonDiatonicAvailableTensions(keySignature.TonicNote, mode);
             List<int> availableTensions = GetAvailableTensions(keySignature.TonicNote, mode);
             // 코드음일 경우
             if (chordNotes.Contains(note))
@@ -65,6 +71,11 @@ namespace Harmonify
             else if (availableTensions.Contains(note))
             {
                 match += AVAILABLE_TENSION_MATCH;
+            }
+            // 논다이어토닉 어베일러블 텐션일 경우
+            else if (nonDiatonicAvailableTensions.Contains(note))
+            {
+                match += NONDIATONIC_AVAILABLE_TENSION_MATCH;
             }
             // 이도저도 아닌 경우
             else
@@ -118,6 +129,22 @@ namespace Harmonify
             return avoidNotes;
         }
 
+        private static List<int> GetNonDiatonicAvailableTensions(int keyRoot, int mode)
+        {
+            List<int> availableTensions = new List<int>();
+            switch (mode)
+            {
+                case 4:
+                    availableTensions.Add((keyRoot + Note.AsBb) % 12);
+                    availableTensions.Add((keyRoot + Note.A) % 12);
+                    availableTensions.Add((keyRoot + Note.AsBb) % 12);
+                    availableTensions.Add((keyRoot + Note.CsDb) % 12);
+                    availableTensions.Add((keyRoot + Note.DsEb) % 12);
+                    break;
+            }
+            return availableTensions;
+        }
+
         private static List<int> GetAvailableTensions(int keyRoot, int mode)
         {
             List<int> availableTensions = new List<int>();
@@ -145,11 +172,7 @@ namespace Harmonify
                     break;
                 // 믹솔리디안 : A, E
                 case 4:
-                    availableTensions.Add((keyRoot + Note.AsBb) % 12);
                     availableTensions.Add((keyRoot + Note.A) % 12);
-                    availableTensions.Add((keyRoot + Note.AsBb) % 12);
-                    availableTensions.Add((keyRoot + Note.CsDb) % 12);
-                    availableTensions.Add((keyRoot + Note.DsEb) % 12);
                     availableTensions.Add((keyRoot + Note.E) % 12);
                     break;
                 // 애올리안 : B, D

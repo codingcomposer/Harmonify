@@ -254,17 +254,19 @@ namespace Harmonify
                 for (int chordIndex = 0; chordIndex < dominantChords.Count; chordIndex++)
                 {
                     currentMatch = 0;
+                    int[] chordNotes = new int[dominantChords[chordIndex].chordNotes.Length];
+                    Array.Copy(dominantChords[chordIndex].chordNotes, chordNotes, chordNotes.Length);
                     for (int j = 0; j < noteWeights.Length; j++)
                     {
                         if(noteWeights[j] > 0)
                         {
-                            currentMatch += Chord.Match(nearKeys[keyIndex], j, dominantChords[chordIndex].chordNotes) * noteWeights[j];
+                            currentMatch += Chord.Match(nearKeys[keyIndex], j, chordNotes) * noteWeights[j];
                         }
                     }
                     dominantChords[chordIndex].match = currentMatch;
                     // 나란한조의 경우 인센티브 줌.
                     //currentMatch = (int)(currentMatch * (KeySignature.AreRelativeKeys(KeySignature, nearKeys[i]) ? 1.5f : 1f));
-                    if (matchestChord == null || currentMatch >= matchestMatch)
+                    if (matchestChord == null || currentMatch > matchestMatch)
                     {
                         matchestMatch = currentMatch;
                         matchestChord = dominantChords[chordIndex];
