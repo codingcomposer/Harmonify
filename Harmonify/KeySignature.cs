@@ -129,12 +129,10 @@ namespace Harmonify
             }
         }
 
-        public static string GetKeyNotation(KeySignature key)
+        public override string ToString()
         {
-            return Note.GetNoteName(key.tonicNote) + key.majority.ToString();
+            return Note.GetNoteName(tonicNote) + majority.ToString();
         }
-
-
         public static KeySignature AssumeKey(List<Measure> measures, List<Note> notes)
         {
             List<KeySignature> result = new List<KeySignature>();

@@ -20,6 +20,9 @@ namespace Harmonify
         public Measure PrevMeasure { get; private set; }
         public Measure NextMeasure { get; private set; }
         public int chordCount;
+        public int FirstBeatTick { get; private set; }
+        public int SecondBeatTick { get; private set; }
+        public int ThirdBeatTick { get; private set; }
         public string NoteNames 
         { 
             get 
@@ -35,6 +38,9 @@ namespace Harmonify
         public Measure(int _index)
         {
             index = _index;
+            FirstBeatTick = GetFirstTick();
+            ThirdBeatTick = FirstBeatTick + ((GetLastTick() - FirstBeatTick) / 2);
+            SecondBeatTick = FirstBeatTick + ((ThirdBeatTick - FirstBeatTick) / 2);
         }
 
         public void Link(Measure prev, Measure next)
@@ -49,7 +55,7 @@ namespace Harmonify
             {
                 if (Song.GetMeasureIndex(notes[i].onTime) < index)
                 {
-                    notes[i].onTime = GetFirstTick();
+                    notes[i].onTime = FirstBeatTick;
 
                 }
                 if (Song.GetMeasureIndex(notes[i].offTime) > index)
@@ -68,15 +74,15 @@ namespace Harmonify
             {
                 noteWeights[i] = 0;
             }
-            int halfTick = GetFirstTick() + (GetLastTick() - GetFirstTick() / 2);
+            int halfTick = FirstBeatTick + (GetLastTick() - FirstBeatTick / 2);
             for (int i = 0; i < notes.Count; i++)
             {
                 int weight = notes[i].length;
-                if (notes[i].onTime == GetFirstTick())
+                if (notes[i].onTime == FirstBeatTick)
                 {
                     weight = (int)(weight * 2f);
                 }
-                else if (notes[i].onTime == GetFirstTick() + (halfTick - (GetFirstTick()) / 2))
+                else if (notes[i].onTime == FirstBeatTick + (halfTick - FirstBeatTick / 2))
                 {
                     weight = (int)(weight * 1.2f);
                 }
@@ -119,14 +125,14 @@ namespace Harmonify
             {
                 return false;
             }
-            if(notes[0].onTime == GetFirstTick())
+            if(notes[0].onTime == FirstBeatTick)
             {
                 return false;
             }
             else
             {
                 // 반보다 많이 쉰 상태에서 노트가 시작하면
-                if((int)(Song.MidiFile.TicksPerQuarterNote * Song.TimeSigTop * 0.5f) < notes[0].onTime - GetFirstTick())
+                if((int)(Song.MidiFile.TicksPerQuarterNote * Song.TimeSigTop * 0.5f) < notes[0].onTime - FirstBeatTick)
                 {
                     return true;
                 }
@@ -153,7 +159,7 @@ namespace Harmonify
             return notes.Count > 0;
         }
 
-        public int GetFirstTick()
+        private int GetFirstTick()
         {
             return Song.MidiFile.TicksPerQuarterNote * Song.TimeSigTop * index;
         }

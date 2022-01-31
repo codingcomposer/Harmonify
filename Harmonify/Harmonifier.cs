@@ -248,17 +248,17 @@ namespace Harmonify
             Chord matchestChord = null;
             int currentMatch;
             int matchestMatch = int.MinValue;
-            for (int i = 0; i < nearKeys.Count; i++)
+            for (int keyIndex = 0; keyIndex < nearKeys.Count; keyIndex++)
             {
-                List<Chord> dominantChords = ChordFunction.GetAvailable7Chords(nearKeys[i], EChordFunction.Dominant);
-                currentMatch = 0;
+                List<Chord> dominantChords = ChordFunction.GetAvailable7Chords(nearKeys[keyIndex], EChordFunction.Dominant);
                 for (int chordIndex = 0; chordIndex < dominantChords.Count; chordIndex++)
                 {
+                    currentMatch = 0;
                     for (int j = 0; j < noteWeights.Length; j++)
                     {
                         if(noteWeights[j] > 0)
                         {
-                            currentMatch += Chord.Match(nearKeys[i], j, dominantChords[chordIndex].chordNotes) * noteWeights[j];
+                            currentMatch += Chord.Match(nearKeys[keyIndex], j, dominantChords[chordIndex].chordNotes) * noteWeights[j];
                         }
                     }
                     dominantChords[chordIndex].match = currentMatch;

@@ -18,8 +18,7 @@ namespace Harmonify
         private const int AVOID_NOTE_MATCH = -3;
         private const int AVAILABLE_TENSION_MATCH = 2;
         private const int DIATONIC_MATCH = 1;
-        private const int NONDIATONIC_MATCH = 0;
-        private const int MINOR_SECOND_CRASH = -3;
+        private const int NONDIATONIC_MATCH = -5;
 
         public override string ToString()
         {
@@ -70,12 +69,6 @@ namespace Harmonify
             // 이도저도 아닌 경우
             else
             {
-                if(chordNotes.Contains((note + 1) % 12) || chordNotes.Contains((note - 1) % 12))
-                {
-                    match += MINOR_SECOND_CRASH;
-                }
-                else
-                {
                     int[] keyNotes = KeySignature.GetKeyNotes(keySignature);
                     if (keyNotes.ToList().Contains(note))
                     {
@@ -85,7 +78,6 @@ namespace Harmonify
                     {
                         match += NONDIATONIC_MATCH;
                     }
-                }
             }
             return match;
         }
@@ -153,7 +145,11 @@ namespace Harmonify
                     break;
                 // 믹솔리디안 : A, E
                 case 4:
+                    availableTensions.Add((keyRoot + Note.AsBb) % 12);
                     availableTensions.Add((keyRoot + Note.A) % 12);
+                    availableTensions.Add((keyRoot + Note.AsBb) % 12);
+                    availableTensions.Add((keyRoot + Note.CsDb) % 12);
+                    availableTensions.Add((keyRoot + Note.DsEb) % 12);
                     availableTensions.Add((keyRoot + Note.E) % 12);
                     break;
                 // 애올리안 : B, D
