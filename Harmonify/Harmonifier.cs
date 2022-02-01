@@ -216,7 +216,7 @@ namespace Harmonify
         private Chord GetMatchingChord(List<EChordFunction> eChordFunctions, int[] noteWeights, Section section, int measureIndex, int spice)
         {
             Chord matchestChord = null;
-            int currentMatch;
+            float currentMatch;
             for (int functionIndex = 0; functionIndex < eChordFunctions.Count; functionIndex++)
             {
                 currentMatch = 0;
@@ -246,8 +246,8 @@ namespace Harmonify
         {
             List<KeySignature> nearKeys = KeySignature.GetNearKeys(1);
             Chord matchestChord = null;
-            int currentMatch;
-            int matchestMatch = int.MinValue;
+            float currentMatch;
+            float matchestMatch = int.MinValue;
             for (int keyIndex = 0; keyIndex < nearKeys.Count; keyIndex++)
             {
                 List<Chord> dominantChords = ChordFunction.GetAvailable7Chords(nearKeys[keyIndex], EChordFunction.Dominant);

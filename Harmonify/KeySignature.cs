@@ -5,6 +5,7 @@ using System.Linq;
 
 namespace Harmonify
 {
+    public enum eMode { ioanian, dorian, phrygian, lydian, mixolydian, aeolian, locrian, ionianb3, dorianb2, lydianAugmented, lydianb7, mixolydianb6, locrians2, superlocrian }
     public class KeySignature
     {
         public int TonicNote { get { return tonicNote; } }

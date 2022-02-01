@@ -12,7 +12,7 @@ namespace Harmonify
         public EChordFunction EChordFunction { get; private set; }
 
         public int[] chordNotes;
-        public int match;
+        public float match;
         public bool isSecondaryDominant;
         private const int CHORD_TONE_MATCH = 5;
         private const int AVOID_NOTE_MATCH = -5;
@@ -36,24 +36,37 @@ namespace Harmonify
                 chordNotes[i] = root + ChordStack.chordNotes[i];
             }
         }
+        private static eMode GetMode(KeySignature keySignature, int chordRoot)
+        {
+            int modeNum = 0;
+            switch (keySignature.majority)
+            {
+                case KeySignature.Majority.major:
+                    modeNum = (chordRoot - keySignature.TonicNote);
+                    break;
+                case KeySignature.Majority.naturalMinor:
+                    modeNum = (chordRoot - keySignature.TonicNote + 5);
+                    break;
+                case KeySignature.Majority.melodicMinor:
+                    modeNum = (chordRoot - keySignature.TonicNote);
+                    break;
+                default:
+                    break;
+            }
+            modeNum += 7;
+            modeNum %= 12;
+            return (eMode)modeNum;
+        }
 
-        public static int Match(KeySignature keySignature, int note, int[] chordNotes)
+        public static float Match(KeySignature keySignature, int note, int[] chordNotes)
         {
             note %= 12;
-            int mode = chordNotes[0] - keySignature.TonicNote;
             for(int i = 0; i < chordNotes.Length; i++)
             {
                 chordNotes[i] %= 12;
             }
-            if(KeySignature.IsMinor(keySignature.majority))
-            {
-                mode += 5;
-            }
-            int match = 0;
-            if (mode < 0)
-            {
-                mode += 7;
-            }
+            eMode mode = GetMode(keySignature, chordNotes[0]);
+            float match = 0f;
             List<int> avoidNotes = GetAvoidNotes(keySignature.TonicNote, mode);
             List<int> nonDiatonicAvailableTensions = GetNonDiatonicAvailableTensions(keySignature.TonicNote, mode);
             List<int> availableTensions = GetAvailableTensions(keySignature.TonicNote, mode);
@@ -93,97 +106,146 @@ namespace Harmonify
             return match;
         }
 
-        private static List<int> GetAvoidNotes(int keyRoot, int mode)
+        private static List<int> GetAvoidNotes(int keyRoot, eMode mode)
         {
             List<int> avoidNotes = new List<int>();
 
             switch (mode)
             {
                 // 아이오니안 : F
-                case 0:
+                case eMode.ioanian:
                     avoidNotes.Add((keyRoot + Note.F) % 12);
                     break;
                 // 도리안 : B
-                case 1:
+                case eMode.dorian:
                     avoidNotes.Add((keyRoot + Note.B) % 12);
                     break;
                 // 프리지안 : F, C
-                case 2:
+                case eMode.phrygian:
                     avoidNotes.Add((keyRoot + Note.F) % 12);
                     avoidNotes.Add(keyRoot);
                     break;
                 // 리디안 : 없음.
                 // 믹솔리디안 : C
-                case 4:
+                case eMode.mixolydian:
                     avoidNotes.Add(keyRoot);
                     break;
                 // 에올리안
-                case 5:
+                case eMode.aeolian:
                     avoidNotes.Add((keyRoot + Note.F) % 12);
                     break;
                 // 로크리안
-                case 6:
+                case eMode.locrian:
                     avoidNotes.Add(keyRoot);
+                    break;
+                // 
+                case eMode.ionianb3:
+                    break;
+                case eMode.dorianb2:
+                    avoidNotes.Add((keyRoot + Note.DsEb) % 12);
+                    break;
+                case eMode.lydianAugmented:
+                    avoidNotes.Add((keyRoot + Note.C) % 12);
+                    break;
+                case eMode.lydianb7:
+                    break;
+                case eMode.mixolydianb6:
+                    break;
+                case eMode.locrians2:
                     break;
             }
             return avoidNotes;
         }
 
-        private static List<int> GetNonDiatonicAvailableTensions(int keyRoot, int mode)
+        private static List<int> GetNonDiatonicAvailableTensions(int keyRoot, eMode mode)
         {
             List<int> availableTensions = new List<int>();
             switch (mode)
             {
-                case 4:
+                case eMode.mixolydian:
                     availableTensions.Add((keyRoot + Note.AsBb) % 12);
-                    availableTensions.Add((keyRoot + Note.A) % 12);
                     availableTensions.Add((keyRoot + Note.AsBb) % 12);
                     availableTensions.Add((keyRoot + Note.CsDb) % 12);
                     availableTensions.Add((keyRoot + Note.DsEb) % 12);
+                    break;
+                case eMode.lydianAugmented:
+                    availableTensions.Add((keyRoot + Note.FsGb) % 12);
+                    break;
+                case eMode.lydianb7:
+                    availableTensions.Add((keyRoot + Note.FsGb) % 12);
+                    break;
+                case eMode.locrians2:
+                    availableTensions.Add((keyRoot + Note.GsAb) % 12);
                     break;
             }
             return availableTensions;
         }
 
-        private static List<int> GetAvailableTensions(int keyRoot, int mode)
+        private static List<int> GetAvailableTensions(int keyRoot, eMode mode)
         {
             List<int> availableTensions = new List<int>();
             switch (mode)
             {
                 // 아이오니안 : D, A
-                case 0:
+                case eMode.ioanian:
                     availableTensions.Add((keyRoot + Note.D) % 12);
                     availableTensions.Add((keyRoot + Note.A) % 12);
                     break;
                 // 도리안 : E, G
-                case 1:
+                case eMode.dorian:
                     availableTensions.Add((keyRoot + Note.E) % 12);
                     availableTensions.Add((keyRoot + Note.G) % 12);
                     break;
                 // 프리지안 : A
-                case 2:
+                case eMode.phrygian:
                     availableTensions.Add((keyRoot + Note.A) % 12);
                     break;
                 // 리디안 : G, B, D
-                case 3:
+                case eMode.lydian:
                     availableTensions.Add((keyRoot + Note.G) % 12);
                     availableTensions.Add((keyRoot + Note.B) % 12);
                     availableTensions.Add((keyRoot + Note.D) % 12);
                     break;
                 // 믹솔리디안 : A, E
-                case 4:
+                case eMode.mixolydian:
                     availableTensions.Add((keyRoot + Note.A) % 12);
                     availableTensions.Add((keyRoot + Note.E) % 12);
                     break;
                 // 애올리안 : B, D
-                case 5:
+                case eMode.aeolian:
                     availableTensions.Add((keyRoot + Note.B) % 12);
                     availableTensions.Add((keyRoot + Note.D) % 12);
                     break;
                 // 로크리안 : E, G
-                case 6:
+                case eMode.locrian:
                     availableTensions.Add((keyRoot + Note.E) % 12);
                     availableTensions.Add((keyRoot + Note.G) % 12);
+                    break;
+                case eMode.ionianb3:
+                    availableTensions.Add((keyRoot + Note.D) % 12);
+                    availableTensions.Add((keyRoot + Note.F) % 12);
+                    availableTensions.Add((keyRoot + Note.A) % 12);
+                    break;
+                case eMode.dorianb2:
+                    availableTensions.Add((keyRoot + Note.F) % 12);
+                    availableTensions.Add((keyRoot + Note.A) % 12);
+                    break;
+                case eMode.lydianAugmented:
+                    availableTensions.Add((keyRoot + Note.D) % 12);
+                    break;
+                case eMode.lydianb7:
+                    availableTensions.Add((keyRoot + Note.D) % 12);
+                    availableTensions.Add((keyRoot + Note.A) % 12);
+                    break;
+                case eMode.mixolydianb6:
+                    availableTensions.Add((keyRoot + Note.D) % 12);
+                    availableTensions.Add((keyRoot + Note.F) % 12);
+                    break;
+                case eMode.locrians2:
+                    availableTensions.Add((keyRoot + Note.D) % 12);
+                    availableTensions.Add((keyRoot + Note.F) % 12);
+                    break;
+                case eMode.superlocrian:
                     break;
             }
             return availableTensions;
