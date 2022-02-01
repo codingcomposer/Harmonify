@@ -14,12 +14,12 @@ namespace Harmonify
         public int[] chordNotes;
         public float match;
         public bool isSecondaryDominant;
-        private const int CHORD_TONE_MATCH = 5;
-        private const int AVOID_NOTE_MATCH = -5;
-        private const int AVAILABLE_TENSION_MATCH = 3;
-        private const int NONDIATONIC_AVAILABLE_TENSION_MATCH = 1;
-        private const int DIATONIC_MATCH = 1;
-        private const int NONDIATONIC_MATCH = -10;
+        private const float CHORD_TONE_MATCH = 1f;
+        private const float AVOID_NOTE_MATCH = -2f;
+        private const float AVAILABLE_TENSION_MATCH = 0.6f;
+        private const float NONDIATONIC_AVAILABLE_TENSION_MATCH = 0.4f;
+        private const float DIATONIC_MATCH = 0.1f;
+        private const float NONDIATONIC_MATCH = -3f;
 
         public override string ToString()
         {
