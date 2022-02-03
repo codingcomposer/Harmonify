@@ -99,7 +99,8 @@ namespace Harmonify
             List<KeySignature> relativeKeys = new List<KeySignature>();
             if (majority == Majority.major)
             {
-                relativeKeys.Add(new KeySignature((originalKey.tonicNote + 9) % 12, Majority.harmonicMinor));
+                // TODO : 하모닉 마이너는 나중에 하모닉 마이너 모드가 추가되면 할 것.
+                //relativeKeys.Add(new KeySignature((originalKey.tonicNote + 9) % 12, Majority.harmonicMinor));
                 relativeKeys.Add(new KeySignature((originalKey.tonicNote + 9) % 12, Majority.melodicMinor));
             }
             else
@@ -107,7 +108,7 @@ namespace Harmonify
                 relativeKeys.Add(new KeySignature((originalKey.tonicNote + 3) % 12, Majority.major));
                 if(originalKey.majority != Majority.harmonicMinor)
                 {
-                    relativeKeys.Add(new KeySignature(originalKey.tonicNote, Majority.harmonicMinor));
+                    //relativeKeys.Add(new KeySignature(originalKey.tonicNote, Majority.harmonicMinor));
                 }
                 if(originalKey.majority != Majority.melodicMinor)
                 {
@@ -321,6 +322,7 @@ namespace Harmonify
                 Majority.major => majorNotes,
                 Majority.naturalMinor => naturalMinorNotes,
                 Majority.harmonicMinor => harmonicMinorNotes,
+                Majority.melodicMinor => melodicMinorNotes,
                 _ => majorNotes,
             };
         }

@@ -168,5 +168,15 @@ namespace Harmonify
         {
             return Song.MidiFile.TicksPerQuarterNote * Song.TimeSigTop * (index + 1);
         }
+
+        public override string ToString()
+        {
+            string noteStr = null;
+            for(int i = 0; i < notes.Count; i++)
+            {
+                noteStr += notes[i].noteName;
+            }
+            return index.ToString() + ":" + noteStr;
+        }
     }
 }

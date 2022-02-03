@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Linq;
 
 namespace Harmonify
 {
@@ -118,7 +119,9 @@ namespace Harmonify
                         if (!KeySignature.IsDiatonic(sections[i].measures[j].notes))
                         {
                             Chord matchestDiatonic = GetMatchingChord(diatonics, sections[i].measures[j].noteWeights, sections[i], j, spice);
-                            Chord matchestSecondaryDominant = GetMatchingSecondaryDominant(sections[i].measures[j].noteWeights);
+                            List<Chord> secondaryDominants = GetMatchingSecondaryDominants(sections[i].measures[j].noteWeights);
+                            secondaryDominants.Sort((a, b) => b.match.CompareTo(a.match));
+                            Chord matchestSecondaryDominant = secondaryDominants[0];
 
                             sections[i].measures[j].chords.Add(matchestDiatonic.match > matchestSecondaryDominant.match ? matchestDiatonic : matchestSecondaryDominant);
                         }
@@ -175,20 +178,24 @@ namespace Harmonify
             {
                 for(int measureIndex = 0;measureIndex < sections[sectionIndex].measures.Count; measureIndex++)
                 {
-                    Measure measure = sections[sectionIndex].measures[measureIndex];
-                    measure.candidateChords.AddRange(GetDiatonicCandidateChords(measure.noteWeights));
-                    // 논 다이어토닉 코드를 포함하고 있으면
-                    if (!KeySignature.IsDiatonic(sections[sectionIndex].measures[measureIndex].notes))
+                    if (sections[sectionIndex].measures[measureIndex].NoteExists())
                     {
-                        measure.candidateChords.Add(GetMatchingSecondaryDominant(sections[sectionIndex].measures[measureIndex].noteWeights));
-                    }
-                    string msg = sectionIndex.ToString() + " " + measureIndex.ToString();
-                    for (int chordIndex = 0;chordIndex < measure.candidateChords.Count; chordIndex++)
-                    {
-                        msg += measure.candidateChords[chordIndex].ToString() + " " + (measure.NoteWeightsSum > 0 ? MathF.Round((float)measure.candidateChords[chordIndex].match / measure.NoteWeightsSum, 1) : 0);
+                        Measure measure = sections[sectionIndex].measures[measureIndex];
+                        measure.candidateChords.AddRange(GetDiatonicCandidateChords(measure.noteWeights));
+                        // 논 다이어토닉 코드를 포함하고 있으면
+                        if (!KeySignature.IsDiatonic(sections[sectionIndex].measures[measureIndex].notes))
+                        {
+                            // 세컨더리 도미넌트 코드도 추가.
+                            measure.candidateChords.AddRange(GetMatchingSecondaryDominants(sections[sectionIndex].measures[measureIndex].noteWeights));
+                        }
+                        string msg = sectionIndex.ToString() + " " + measureIndex.ToString();
+                        for (int chordIndex = 0; chordIndex < measure.candidateChords.Count; chordIndex++)
+                        {
+                            msg += measure.candidateChords[chordIndex].ToString() + " " + (measure.NoteWeightsSum > 0 ? MathF.Round((float)measure.candidateChords[chordIndex].match / measure.NoteWeightsSum, 1) : 0);
 
+                        }
+                        System.Windows.Forms.MessageBox.Show(msg);
                     }
-                    System.Windows.Forms.MessageBox.Show(msg);
                 }
             }
         }
@@ -204,7 +211,7 @@ namespace Harmonify
             {
                 for (int k = 0; k < noteWeights.Length; k++)
                 {
-                    if (chords[chordIndex].chordNotes != null && chords[chordIndex].chordNotes.Length > 1)
+                    if (noteWeights[k] > 0 && chords[chordIndex].chordNotes != null && chords[chordIndex].chordNotes.Length > 1)
                     {
                         chords[chordIndex].match += Chord.Match(KeySignature, k, chords[chordIndex].chordNotes) * noteWeights[k];
                     }
@@ -242,12 +249,11 @@ namespace Harmonify
             return matchestChord;
         }
 
-        private Chord GetMatchingSecondaryDominant(int[] noteWeights)
+        private List<Chord> GetMatchingSecondaryDominants(int[] noteWeights)
         {
             List<KeySignature> nearKeys = KeySignature.GetNearKeys(1);
-            Chord matchestChord = null;
+            List<Chord> candidates = new List<Chord>();
             float currentMatch;
-            float matchestMatch = int.MinValue;
             for (int keyIndex = 0; keyIndex < nearKeys.Count; keyIndex++)
             {
                 List<Chord> dominantChords = ChordFunction.GetAvailable7Chords(nearKeys[keyIndex], EChordFunction.Dominant);
@@ -264,16 +270,10 @@ namespace Harmonify
                         }
                     }
                     dominantChords[chordIndex].match = currentMatch;
-                    // 나란한조의 경우 인센티브 줌.
-                    //currentMatch = (int)(currentMatch * (KeySignature.AreRelativeKeys(KeySignature, nearKeys[i]) ? 1.5f : 1f));
-                    if (matchestChord == null || currentMatch > matchestMatch)
-                    {
-                        matchestMatch = currentMatch;
-                        matchestChord = dominantChords[chordIndex];
-                    }
+                    candidates.Add(dominantChords[chordIndex]);
                 }
             }
-            return matchestChord;
+            return candidates;
         }
 
     }

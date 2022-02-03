@@ -15,9 +15,9 @@ namespace Harmonify
         public float match;
         public bool isSecondaryDominant;
         private const float CHORD_TONE_MATCH = 1f;
-        private const float AVOID_NOTE_MATCH = -2f;
+        private const float AVOID_NOTE_MATCH = -1f;
         private const float AVAILABLE_TENSION_MATCH = 0.6f;
-        private const float NONDIATONIC_AVAILABLE_TENSION_MATCH = 0.4f;
+        private const float NONDIATONIC_AVAILABLE_TENSION_MATCH = 0.1f;
         private const float DIATONIC_MATCH = 0.1f;
         private const float NONDIATONIC_MATCH = -3f;
 
@@ -36,25 +36,19 @@ namespace Harmonify
                 chordNotes[i] = root + ChordStack.chordNotes[i];
             }
         }
-        private static eMode GetMode(KeySignature keySignature, int chordRoot)
+        private static eMode? GetMode(KeySignature keySignature, int chordRoot)
         {
             int modeNum = 0;
-            switch (keySignature.majority)
+            List<int> keyNotes = KeySignature.GetKeyNotes(keySignature).ToList();
+            modeNum = keyNotes.IndexOf(chordRoot);
+            if(modeNum == -1)
             {
-                case KeySignature.Majority.major:
-                    modeNum = (chordRoot - keySignature.TonicNote);
-                    break;
-                case KeySignature.Majority.naturalMinor:
-                    modeNum = (chordRoot - keySignature.TonicNote + 5);
-                    break;
-                case KeySignature.Majority.melodicMinor:
-                    modeNum = (chordRoot - keySignature.TonicNote);
-                    break;
-                default:
-                    break;
+                return null;
             }
-            modeNum += 7;
-            modeNum %= 12;
+            if(keySignature.majority == KeySignature.Majority.melodicMinor)
+            {
+                modeNum += 7;
+            }
             return (eMode)modeNum;
         }
 
@@ -65,7 +59,12 @@ namespace Harmonify
             {
                 chordNotes[i] %= 12;
             }
-            eMode mode = GetMode(keySignature, chordNotes[0]);
+            eMode? modeNullable = GetMode(keySignature, chordNotes[0]);
+            if(modeNullable == null)
+            {
+                return float.MinValue;
+            }
+            eMode mode = (eMode)modeNullable;
             float match = 0f;
             List<int> avoidNotes = GetAvoidNotes(keySignature.TonicNote, mode);
             List<int> nonDiatonicAvailableTensions = GetNonDiatonicAvailableTensions(keySignature.TonicNote, mode);
