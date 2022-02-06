@@ -80,15 +80,19 @@ namespace Harmonify
                 int weight = notes[i].length;
                 if (notes[i].onTime == FirstBeatTick)
                 {
-                    weight = (int)(weight * 2f);
+                    weight = (int)(weight * 1.5f);
+                }
+                else if(i == 0)
+                {
+                    weight = (int)(weight * 1.5f);
                 }
                 else if (notes[i].onTime <= SecondBeatTick && notes[i].offTime > SecondBeatTick)
                 {
-                    weight = (int)(weight * 1.2f);
+                    weight = (int)(weight * 1.1f);
                 }
                 else if (notes[i].onTime <= ThirdBeatTick && notes[i].offTime > ThirdBeatTick)
                 {
-                    weight = (int)(weight * 1.5f);
+                    weight = (int)(weight * 1.3f);
                 }
                 noteWeights[notes[i].noteNumber % 12] += weight;
                 if(notes[i].offTime <= halfTick)

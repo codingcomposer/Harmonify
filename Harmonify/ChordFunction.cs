@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Data;
 
 namespace Harmonify
 {
@@ -40,6 +41,211 @@ namespace Harmonify
 
 
         private static List<ChordStack> dimSuperTonic = new List<ChordStack>();
+
+        private static DataTable progressionTable = new DataTable();
+
+        private const int GOOD_PROGERSSION = 2;
+        private const int MEDIOCRE_PROGRESSION = 1;
+        private const int BAD_PROGRESSION = 0;
+
+        private static void InitializeProgressionPoint()
+        {
+            DataColumn from = new DataColumn("From", typeof(EChordFunction));
+            DataColumn to = new DataColumn("To", typeof(EChordFunction));
+            DataColumn point = new DataColumn("Point", typeof(int));
+            progressionTable.Columns.Add(from);
+            progressionTable.Columns.Add(to);
+            progressionTable.Columns.Add(point);
+            // C ->
+            DataRow row = progressionTable.NewRow();
+            row[from] = EChordFunction.Tonic;
+            row[to] = EChordFunction.Tonic;
+            row[point] = BAD_PROGRESSION;
+            progressionTable.Rows.Add(row);
+            row = progressionTable.NewRow();
+            row[from] = EChordFunction.Tonic;
+            row[to] = EChordFunction.SuperTonic;
+            row[point] = MEDIOCRE_PROGRESSION;
+            progressionTable.Rows.Add(row);
+            row = progressionTable.NewRow();
+            row[from] = EChordFunction.Tonic;
+            row[to] = EChordFunction.Mediant;
+            row[point] = GOOD_PROGERSSION;
+            progressionTable.Rows.Add(row);
+            row = progressionTable.NewRow();
+            row[from] = EChordFunction.Tonic;
+            row[to] = EChordFunction.SubDominant;
+            row[point] = GOOD_PROGERSSION;
+            progressionTable.Rows.Add(row);
+            row = progressionTable.NewRow();
+            row[from] = EChordFunction.Tonic;
+            row[to] = EChordFunction.Dominant;
+            row[point] = GOOD_PROGERSSION;
+            progressionTable.Rows.Add(row);
+            row = progressionTable.NewRow();
+            row[from] = EChordFunction.Tonic;
+            row[to] = EChordFunction.SubMediant;
+            row[point] = GOOD_PROGERSSION;
+            progressionTable.Rows.Add(row);
+            // Dm ->
+            row = progressionTable.NewRow();
+            row[from] = EChordFunction.SuperTonic;
+            row[to] = EChordFunction.Tonic;
+            row[point] = BAD_PROGRESSION;
+            progressionTable.Rows.Add(row);
+            row = progressionTable.NewRow();
+            row[from] = EChordFunction.SuperTonic;
+            row[to] = EChordFunction.SuperTonic;
+            row[point] = BAD_PROGRESSION;
+            progressionTable.Rows.Add(row);
+            row = progressionTable.NewRow();
+            row[from] = EChordFunction.SuperTonic;
+            row[to] = EChordFunction.Mediant;
+            row[point] = MEDIOCRE_PROGRESSION;
+            progressionTable.Rows.Add(row);
+            row = progressionTable.NewRow();
+            row[from] = EChordFunction.SuperTonic;
+            row[to] = EChordFunction.SubDominant;
+            row[point] = MEDIOCRE_PROGRESSION;
+            progressionTable.Rows.Add(row);
+            row = progressionTable.NewRow();
+            row[from] = EChordFunction.SuperTonic;
+            row[to] = EChordFunction.Dominant;
+            row[point] = GOOD_PROGERSSION;
+            progressionTable.Rows.Add(row);
+            row = progressionTable.NewRow();
+            row[from] = EChordFunction.SuperTonic;
+            row[to] = EChordFunction.SubMediant;
+            row[point] = MEDIOCRE_PROGRESSION;
+            progressionTable.Rows.Add(row);
+
+            // Em ->
+            row = progressionTable.NewRow();
+            row[from] = EChordFunction.Mediant;
+            row[to] = EChordFunction.Tonic;
+            row[point] = MEDIOCRE_PROGRESSION;
+            progressionTable.Rows.Add(row);
+            row = progressionTable.NewRow();
+            row[from] = EChordFunction.Mediant;
+            row[to] = EChordFunction.SuperTonic;
+            row[point] = BAD_PROGRESSION;
+            progressionTable.Rows.Add(row);
+            row = progressionTable.NewRow();
+            row[from] = EChordFunction.Mediant;
+            row[to] = EChordFunction.Mediant;
+            row[point] = BAD_PROGRESSION;
+            progressionTable.Rows.Add(row);
+            row = progressionTable.NewRow();
+            row[from] = EChordFunction.Mediant;
+            row[to] = EChordFunction.SubDominant;
+            row[point] = GOOD_PROGERSSION;
+            progressionTable.Rows.Add(row);
+            row = progressionTable.NewRow();
+            row[from] = EChordFunction.Mediant;
+            row[to] = EChordFunction.Dominant;
+            row[point] = BAD_PROGRESSION;
+            progressionTable.Rows.Add(row);
+            row = progressionTable.NewRow();
+            row[from] = EChordFunction.Mediant;
+            row[to] = EChordFunction.SubMediant;
+            row[point] = GOOD_PROGERSSION;
+            progressionTable.Rows.Add(row);
+            // F->
+            row = progressionTable.NewRow();
+            row[from] = EChordFunction.SubDominant;
+            row[to] = EChordFunction.Tonic;
+            row[point] = GOOD_PROGERSSION;
+            progressionTable.Rows.Add(row);
+            row = progressionTable.NewRow();
+            row[from] = EChordFunction.SubDominant;
+            row[to] = EChordFunction.SuperTonic;
+            row[point] = MEDIOCRE_PROGRESSION;
+            progressionTable.Rows.Add(row);
+            row = progressionTable.NewRow();
+            row[from] = EChordFunction.SubDominant;
+            row[to] = EChordFunction.Mediant;
+            row[point] = MEDIOCRE_PROGRESSION;
+            progressionTable.Rows.Add(row);
+            row = progressionTable.NewRow();
+            row[from] = EChordFunction.SubDominant;
+            row[to] = EChordFunction.SubDominant;
+            row[point] = BAD_PROGRESSION;
+            progressionTable.Rows.Add(row);
+            row = progressionTable.NewRow();
+            row[from] = EChordFunction.SubDominant;
+            row[to] = EChordFunction.Dominant;
+            row[point] = GOOD_PROGERSSION;
+            progressionTable.Rows.Add(row);
+            row = progressionTable.NewRow();
+            row[from] = EChordFunction.SubDominant;
+            row[to] = EChordFunction.SubMediant;
+            row[point] = MEDIOCRE_PROGRESSION;
+            progressionTable.Rows.Add(row);
+            // G->
+            row = progressionTable.NewRow();
+            row[from] = EChordFunction.Dominant;
+            row[to] = EChordFunction.Tonic;
+            row[point] = GOOD_PROGERSSION;
+            progressionTable.Rows.Add(row);
+            row = progressionTable.NewRow();
+            row[from] = EChordFunction.Dominant;
+            row[to] = EChordFunction.SuperTonic;
+            row[point] = BAD_PROGRESSION;
+            progressionTable.Rows.Add(row);
+            row = progressionTable.NewRow();
+            row[from] = EChordFunction.Dominant;
+            row[to] = EChordFunction.Mediant;
+            row[point] = GOOD_PROGERSSION;
+            progressionTable.Rows.Add(row);
+            row = progressionTable.NewRow();
+            row[from] = EChordFunction.Dominant;
+            row[to] = EChordFunction.SubDominant;
+            row[point] = BAD_PROGRESSION;
+            progressionTable.Rows.Add(row);
+            row = progressionTable.NewRow();
+            row[from] = EChordFunction.Dominant;
+            row[to] = EChordFunction.Dominant;
+            row[point] = BAD_PROGRESSION;
+            progressionTable.Rows.Add(row);
+            row = progressionTable.NewRow();
+            row[from] = EChordFunction.Dominant;
+            row[to] = EChordFunction.SubMediant;
+            row[point] = GOOD_PROGERSSION;
+            progressionTable.Rows.Add(row);
+            // Am ->
+            row = progressionTable.NewRow();
+            row[from] = EChordFunction.SubMediant;
+            row[to] = EChordFunction.Tonic;
+            row[point] = MEDIOCRE_PROGRESSION;
+            progressionTable.Rows.Add(row);
+            row = progressionTable.NewRow();
+            row[from] = EChordFunction.SubMediant;
+            row[to] = EChordFunction.SuperTonic;
+            row[point] = GOOD_PROGERSSION;
+            progressionTable.Rows.Add(row);
+            row = progressionTable.NewRow();
+            row[from] = EChordFunction.SubMediant;
+            row[to] = EChordFunction.Mediant;
+            row[point] = MEDIOCRE_PROGRESSION;
+            progressionTable.Rows.Add(row);
+            row = progressionTable.NewRow();
+            row[from] = EChordFunction.SubMediant;
+            row[to] = EChordFunction.SubDominant;
+            row[point] = GOOD_PROGERSSION;
+            progressionTable.Rows.Add(row);
+            row = progressionTable.NewRow();
+            row[from] = EChordFunction.SubMediant;
+            row[to] = EChordFunction.Dominant;
+            row[point] = GOOD_PROGERSSION;
+            progressionTable.Rows.Add(row);
+            row = progressionTable.NewRow();
+            row[from] = EChordFunction.SubMediant;
+            row[to] = EChordFunction.SubMediant;
+            row[point] = BAD_PROGRESSION;
+            progressionTable.Rows.Add(row);
+
+        }
+
         static ChordFunction()
         {
             // 메이저 키
@@ -131,6 +337,19 @@ namespace Harmonify
             dominant7ForMin.Add(ChordPrototype.GetChordStackOf(EStackType._7));
             //dominant7ForMin.Add(ChordPrototype.GetChordStackOf(EStackType.min7));
             subMediant7ForMin.Add(ChordPrototype.GetChordStackOf(EStackType.maj7));
+            InitializeProgressionPoint();
+        }
+
+        public static int GetProgressionPoint(EChordFunction from, EChordFunction to)
+        {
+            foreach(DataRow dataRow in progressionTable.Rows)
+            {
+                if((EChordFunction)dataRow["From"] == from && (EChordFunction)dataRow["To"] == to)
+                {
+                    return (int)dataRow["Point"];
+                }
+            }
+            return -1;
         }
 
         public static List<Chord> GetAvailableChords(KeySignature keySignature, EChordFunction eChordFunction, int spice)

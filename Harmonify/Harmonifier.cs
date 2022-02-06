@@ -23,7 +23,12 @@ namespace Harmonify
                 diatonics.Add(eChordFunction);
             }
             AddCandidateChords();
-            PreliminaryPass(keyNotes);
+            PreliminaryPass(keyNotes); 
+            Iterate();
+        }
+
+        private void Iterate()
+        {
             for (int i = 0; i < sections.Count; i++)
             {
                 if (sections[i].measures[0].notes.Count > 0)
@@ -38,8 +43,99 @@ namespace Harmonify
                         // 아니면
                         else
                         {
-                            sections[i].measures[j].chords.Add(GetMatchingChord(diatonics, sections[i].measures[j].noteWeights, sections[i], j, spice));
+                            int biggestPoint = int.MinValue;
+                            Chord biggestMatch = null;
+                            Measure currentMeasure = sections[i].measures[j];
+                            foreach (Chord candidate in currentMeasure.candidateChords)
+                            {
+                                int prevPoint = 0;
+                                // 이전에 코드가 있을 경우
+                                if (j > 0 && sections[i].measures[j - 1].chords.Count > 0)
+                                {
+                                    Measure prevMeasure = sections[i].measures[j - 1];
+                                    if (prevMeasure.chords[0] == null)
+                                    {
+                                        int here = 0;
+                                    }
+                                    // 이전으로부터의 코드 진행 점수를 구함.
+                                    prevPoint = ChordFunction.GetProgressionPoint(prevMeasure.chords[prevMeasure.chords.Count - 1].EChordFunction, candidate.isSecondaryDominant ? (EChordFunction)(KeySignature.GetKeyNotes(KeySignature).ToList().IndexOf(candidate.Root))  : candidate.EChordFunction);
+                                }
+                                int nextPoint = 0;
+                                if (j < sections[i].measures.Count - 1)
+                                {
+                                    Measure nextMeasure = sections[i].measures[j + 1];
+                                    Chord nextImaginaryChord = null;
+                                    // 이후에 코드가 있을 경우
+                                    if (nextMeasure.chords.Count > 0)
+                                    {
+                                        // 이후로부터의 코드 진행 점수르 구함.
+                                        nextPoint = ChordFunction.GetProgressionPoint(candidate.EChordFunction, nextMeasure.chords[0].EChordFunction);
+                                        nextImaginaryChord = nextMeasure.chords[0];
+                                    }
+                                    // 이후에 코드가 없으 경우
+                                    else
+                                    {
+                                        int imaginaryPoint = 0;
+                                        int maxImaginaryPoint = int.MinValue;
+                                        // 세컨더리 도미넌트일 경우
+                                        if (candidate.isSecondaryDominant)
+                                        {
+                                            int resolveRoot = (candidate.Root + 5) % 12;
+                                            foreach(Chord nextCandidate in nextMeasure.candidateChords)
+                                            {
+                                                if(nextCandidate.Root % 12== resolveRoot)
+                                                {
+                                                    nextPoint = 5;
+                                                    imaginaryPoint = ChordFunction.GetProgressionPoint(EChordFunction.Dominant, EChordFunction.Tonic);
+                                                    maxImaginaryPoint = imaginaryPoint;
+                                                    nextImaginaryChord = nextCandidate;
+                                                    break;
+                                                }
+                                            }
+                                        }
+                                        else
+                                        {
+                                            // 이후의 코드후보로부터 가장 높은 포인트를 얻은 코드로 구함.
+                                            foreach (Chord nextCandidate in nextMeasure.candidateChords)
+                                            {
+                                                imaginaryPoint = ChordFunction.GetProgressionPoint(candidate.EChordFunction, nextCandidate.EChordFunction);
+                                                if (imaginaryPoint > maxImaginaryPoint)
+                                                {
+                                                    maxImaginaryPoint = imaginaryPoint;
+                                                    nextImaginaryChord = nextCandidate;
+                                                }
+                                                else if(imaginaryPoint == maxImaginaryPoint)
+                                                {
+                                                    if(nextImaginaryChord.match < nextCandidate.match)
+                                                    {
+                                                        maxImaginaryPoint = imaginaryPoint;
+                                                        nextImaginaryChord = nextCandidate;
+                                                    }
+                                                }
+                                            }
+                                        }
+                                        nextPoint = maxImaginaryPoint;
+                                    }
+                                }
+                                // 이전코드로부터의 진행점수와 다음 코드로의 진행점수를 합산.
+                                int currentPoint = prevPoint + nextPoint;
+                                if (currentPoint > biggestPoint || biggestMatch == null)
+                                {
+                                    biggestMatch = candidate;
+                                    biggestPoint = currentPoint;
+                                }
+                                else if(currentPoint == biggestPoint)
+                                {
+                                    if(biggestMatch.match < candidate.match)
+                                    {
+                                        biggestMatch = candidate;
+                                        biggestPoint = currentPoint;
+                                    }
+                                }
 
+                            }
+                            // 여기서 올림.
+                            currentMeasure.chords.Add(biggestMatch);
                         }
                     }
                 }
@@ -108,24 +204,6 @@ namespace Harmonify
                         fourFive.Add(EChordFunction.Dominant);
                         sections[i].measures[lastMeasureIndex - 1].chords.Add(GetMatchingChord(fourFive, sections[i].measures[lastMeasureIndex - 1].noteWeights, sections[i], lastMeasureIndex - 1, spice));
                     }
-                    // NonDiatonic 노트 있으면 따져보기.
-                    List<EChordFunction> diatonics = new List<EChordFunction>();
-                    foreach (EChordFunction eChordFunction in Enum.GetValues(typeof(EChordFunction)))
-                    {
-                        diatonics.Add(eChordFunction);
-                    }
-                    for (int j = 0; j < sections[i].measures.Count; j++)
-                    {
-                        if (!KeySignature.IsDiatonic(sections[i].measures[j].notes))
-                        {
-                            Chord matchestDiatonic = GetMatchingChord(diatonics, sections[i].measures[j].noteWeights, sections[i], j, spice);
-                            List<Chord> secondaryDominants = GetMatchingSecondaryDominants(sections[i].measures[j].noteWeights);
-                            secondaryDominants.Sort((a, b) => b.match.CompareTo(a.match));
-                            Chord matchestSecondaryDominant = secondaryDominants[0];
-
-                            sections[i].measures[j].chords.Add(matchestDiatonic.match > matchestSecondaryDominant.match ? matchestDiatonic : matchestSecondaryDominant);
-                        }
-                    }
 
                 }
             }
@@ -188,13 +266,14 @@ namespace Harmonify
                             // 세컨더리 도미넌트 코드도 추가.
                             measure.candidateChords.AddRange(GetMatchingSecondaryDominants(sections[sectionIndex].measures[measureIndex].noteWeights));
                         }
-                        string msg = sectionIndex.ToString() + " " + measureIndex.ToString();
-                        for (int chordIndex = 0; chordIndex < measure.candidateChords.Count; chordIndex++)
+                        for(int chordIndex = 0;chordIndex < measure.candidateChords.Count; chordIndex++)
                         {
-                            msg += measure.candidateChords[chordIndex].ToString() + " " + (measure.NoteWeightsSum > 0 ? MathF.Round((float)measure.candidateChords[chordIndex].match / measure.NoteWeightsSum, 1) : 0);
-
+                            if(measure.candidateChords[chordIndex].match < 700)
+                            {
+                                measure.candidateChords.RemoveAt(chordIndex);
+                                chordIndex--;
+                            }
                         }
-                        System.Windows.Forms.MessageBox.Show(msg);
                     }
                 }
             }
@@ -259,6 +338,7 @@ namespace Harmonify
                 List<Chord> dominantChords = ChordFunction.GetAvailable7Chords(nearKeys[keyIndex], EChordFunction.Dominant);
                 for (int chordIndex = 0; chordIndex < dominantChords.Count; chordIndex++)
                 {
+                    dominantChords[chordIndex].isSecondaryDominant = true;
                     currentMatch = 0;
                     int[] chordNotes = new int[dominantChords[chordIndex].chordNotes.Length];
                     Array.Copy(dominantChords[chordIndex].chordNotes, chordNotes, chordNotes.Length);
