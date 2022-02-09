@@ -8,8 +8,7 @@ namespace Harmonify
     {
         public int index;
         public readonly List<Note> notes = new List<Note>();
-        public List<Chord> chords = new List<Chord>();
-        public List<Chord> candidateChords = new List<Chord>();
+        public List<ChordSlot> chordSlots = new List<ChordSlot>();
         public bool IsIncomplete { get; private set; }
         public int section;
         public int[] noteWeights = new int[12];
@@ -41,6 +40,8 @@ namespace Harmonify
             FirstBeatTick = GetFirstTick();
             ThirdBeatTick = FirstBeatTick + ((GetLastTick() - FirstBeatTick) / 2);
             SecondBeatTick = FirstBeatTick + ((ThirdBeatTick - FirstBeatTick) / 2);
+            // 기본적으로 코드하나는 들어간다.
+            chordSlots.Add(new ChordSlot());
         }
 
         public void Link(Measure prev, Measure next)

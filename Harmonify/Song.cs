@@ -87,23 +87,19 @@ namespace Harmonify
                 result += "\r\n" + i.ToString() + ":";
                 for (int j = 0; j < sections[i].measures.Count; j++)
                 {
-                    if (sections[i].measures[j].chords.Count > 0)
+                    for(int slotIndex = 0;slotIndex < sections[i].measures[j].chordSlots.Count; slotIndex++)
                     {
-                        for (int k = 0; k < sections[i].measures[j].chords.Count; k++)
-                        {
-                            if (sections[i].measures[j].chords[k].chordNotes.Length > 0)
+                            for (int k = 0; k < sections[i].measures[j].chordSlots.Count; k++)
                             {
-                                result += sections[i].measures[j].chords[k].ToString();
+                                if (sections[i].measures[j].chordSlots[k].chord != null)
+                                {
+                                    result += sections[i].measures[j].chordSlots[k].chord.ToString();
+                                }
+                                else
+                                {
+                                    result += "-";
+                                }
                             }
-                            else
-                            {
-                                result += "-";
-                            }
-                        }
-                    }
-                    else
-                    {
-                        result += "-";
                     }
                     result += "|";
                 }
@@ -148,9 +144,9 @@ namespace Harmonify
             {
                 for (int j = 0; j < sections[i].measures.Count; j++)
                 {
-                    for (int k = 0; k < sections[i].measures[j].chords.Count; k++)
+                    for (int k = 0; k < sections[i].measures[j].chordSlots.Count; k++)
                     {
-                        sections[i].measures[j].chords.Clear();
+                        sections[i].measures[j].chordSlots[k].chord = null;
                     }
                 }
             }
