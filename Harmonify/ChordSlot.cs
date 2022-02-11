@@ -6,6 +6,8 @@ namespace Harmonify
 {
     public class ChordSlot
     {
+        public ChordSlot prevSlot;
+        public ChordSlot nextSlot;
         public Chord chord;
         public List<Chord> candidateChords = new List<Chord>();
     }

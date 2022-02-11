@@ -48,6 +48,13 @@ namespace Harmonify
         {
             PrevMeasure = prev;
             NextMeasure = next;
+            chordSlots[0].prevSlot = prev?.chordSlots[^1];
+            for(int i = 1;i<chordSlots.Count - 1;i++)
+            {
+                chordSlots[i].prevSlot = chordSlots[i - 1];
+                chordSlots[i].nextSlot = chordSlots[i + 1];
+            }
+            chordSlots[^1].nextSlot = next?.chordSlots[0];
         }
 
         public void TrimNotes()
