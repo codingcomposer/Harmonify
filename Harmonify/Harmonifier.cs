@@ -37,138 +37,114 @@ namespace Harmonify
                     {
                         for(int slotIndex = 0; slotIndex < sections[sectionIndex].measures[measureIndex].chordSlots.Count; slotIndex++)
                         {
-                            // 이미 코드가 있으면 넘김.
-                            if (sections[sectionIndex].measures[measureIndex].chordSlots[slotIndex].chord != null)
-                            {
-                                continue;
-                            }
-                            // 아니면
-                            else
-                            {
-                                int biggestPoint = int.MinValue;
-                                Chord biggestMatch = null;
-                                Measure currentMeasure = sections[sectionIndex].measures[measureIndex];
-                                ChordSlot currentSlot = sections[sectionIndex].measures[measureIndex].chordSlots[slotIndex];
-                                ChordSlot prevChordSlot = null;
-                                ChordSlot nextChordSlot = null;
-                                // 각 후보코드당
-                                foreach (Chord candidate in currentSlot.candidateChords)
-                                {
-                                    // 과거로부터의 점수 계산
-                                    int prevPoint = 0;
-                                    // 현재 슬롯이 마디의 첫번째 슬롯이면 이전 슬롯은 이전 마디의 마지막 슬롯
-                                    if(slotIndex == 0)
-                                    {
-                                        if(currentMeasure.PrevMeasure != null)
-                                        {
-                                            prevChordSlot = currentMeasure.PrevMeasure.chordSlots[^1];
-                                        }
-                                    }
-                                    // 현재 슬롯이 마디의 첫번째 슬롯이 아니라면 이전 슬롯은 현재 마디의 이전 슬롯
-                                    else
-                                    {
-                                        prevChordSlot = currentMeasure.chordSlots[slotIndex - 1];
-                                    }
-                                    // 이전에 코드가 있을 경우
-                                    // 이전으로부터의 코드 진행 점수를 구함.
-                                    if (prevChordSlot != null && prevChordSlot.chord != null)
-                                    {
-                                        prevPoint = ChordFunction.GetProgressionPoint(prevChordSlot.chord.EChordFunction, candidate.isSecondaryDominant ? (EChordFunction)(KeySignature.GetKeyNotes(KeySignature).ToList().IndexOf(candidate.Root)) : candidate.EChordFunction);
-                                    }
-                                    // 미래로의 점수 계산
-                                    int nextPoint = 0;
-                                    // 현재 슬롯이 현재 마디의 마지막 슬롯이라면
-                                    if(slotIndex + 1 >= currentMeasure.chordSlots.Count)
-                                    {
-                                        // 다음 슬롯은 다음 마디의 첫번째 슬롯
-                                        if(currentMeasure.NextMeasure != null)
-                                        {
-                                            nextChordSlot = currentMeasure.NextMeasure.chordSlots[0];
-                                        }
-                                    }
-                                    // 현재 슬롯이 현재 마디의 마지막 슬롯이 아니라면
-                                    else
-                                    {
-                                        // 다음 슬롯은 현재 마디의 다음 슬롯
-                                        nextChordSlot = currentMeasure.chordSlots[slotIndex + 1];
-                                    }
-                                    if (nextChordSlot != null)
-                                    {
-                                        Chord nextImaginaryChord = null;
-                                        // 이후에 코드가 있을 경우
-                                        if (nextChordSlot.chord != null)
-                                        {
-                                            // 이후로부터의 코드 진행 점수르 구함.
-                                            nextPoint = ChordFunction.GetProgressionPoint(candidate.EChordFunction, nextChordSlot.chord.EChordFunction);
-                                            nextImaginaryChord = nextChordSlot.chord;
-                                        }
-                                        // 이후에 코드가 없으 경우
-                                        else
-                                        {
-                                            int imaginaryPoint = 0;
-                                            int maxImaginaryPoint = int.MinValue;
-                                            // 세컨더리 도미넌트일 경우
-                                            if (candidate.isSecondaryDominant)
-                                            {
-                                                int resolveRoot = (candidate.Root + 5) % 12;
-                                                foreach (Chord nextCandidate in nextChordSlot.candidateChords)
-                                                {
-                                                    if (nextCandidate.Root % 12 == resolveRoot)
-                                                    {
-                                                        nextPoint = 5;
-                                                        imaginaryPoint = ChordFunction.GetProgressionPoint(EChordFunction.Dominant, EChordFunction.Tonic);
-                                                        maxImaginaryPoint = imaginaryPoint;
-                                                        nextImaginaryChord = nextCandidate;
-                                                        break;
-                                                    }
-                                                }
-                                            }
-                                            else
-                                            {
-                                                // 이후의 코드후보로부터 가장 높은 포인트를 얻은 코드로 구함.
-                                                foreach (Chord nextCandidate in nextChordSlot.candidateChords)
-                                                {
-                                                    imaginaryPoint = ChordFunction.GetProgressionPoint(candidate.EChordFunction, nextCandidate.EChordFunction);
-                                                    if (imaginaryPoint > maxImaginaryPoint)
-                                                    {
-                                                        maxImaginaryPoint = imaginaryPoint;
-                                                        nextImaginaryChord = nextCandidate;
-                                                    }
-                                                    else if (imaginaryPoint == maxImaginaryPoint)
-                                                    {
-                                                        if (nextImaginaryChord.match < nextCandidate.match)
-                                                        {
-                                                            maxImaginaryPoint = imaginaryPoint;
-                                                            nextImaginaryChord = nextCandidate;
-                                                        }
-                                                    }
-                                                }
-                                            }
-                                            nextPoint = maxImaginaryPoint;
-                                        }
-                                    }
-                                    // 이전코드로부터의 진행점수와 다음 코드로의 진행점수를 합산.
-                                    int currentPoint = prevPoint + nextPoint;
-                                    if (currentPoint > biggestPoint || biggestMatch == null)
-                                    {
-                                        biggestMatch = candidate;
-                                        biggestPoint = currentPoint;
-                                    }
-                                    else if (currentPoint == biggestPoint)
-                                    {
-                                        if (biggestMatch.match < candidate.match)
-                                        {
-                                            biggestMatch = candidate;
-                                            biggestPoint = currentPoint;
-                                        }
-                                    }
-
-                                }
-                                currentSlot.chord = biggestMatch;
-                            }
+                            GetChordFromProgression(sections[sectionIndex].measures[measureIndex].chordSlots[slotIndex]);
                         }
                     }
                 }
+            }
+        }
+
+        private void GetChordFromProgression(ChordSlot slot)
+        {// 이미 코드가 있으면 넘김.
+            if (slot.chord != null)
+            {
+                return;
+            }
+            // 아니면
+            else
+            {
+                int biggestPoint = int.MinValue;
+                Chord biggestMatch = null;
+                Chord nextBiggestMatch = null;
+                ChordSlot nextChordSlot = slot.nextSlot;
+                // 각 후보코드당
+                foreach (Chord candidate in slot.candidateChords)
+                {
+                    // 과거로부터의 점수 계산
+                    int prevPoint = 0;
+                    // 이전에 코드가 있을 경우
+                    // 이전으로부터의 코드 진행 점수를 구함.
+                    if (slot.prevSlot != null && slot.prevSlot.chord != null)
+                    {
+                        prevPoint = ChordFunction.GetProgressionPoint(slot.prevSlot.chord.EChordFunction, candidate.isSecondaryDominant ? (EChordFunction)(KeySignature.GetKeyNotes(KeySignature).ToList().IndexOf(candidate.Root)) : candidate.EChordFunction);
+                    }
+                    // 미래로의 점수 계산
+                    int nextPoint = 0;
+                    if (nextChordSlot != null)
+                    {
+                        Chord nextImaginaryChord = null;
+                        // 이후에 코드가 있을 경우
+                        if (nextChordSlot.chord != null)
+                        {
+                            // 이후로부터의 코드 진행 점수르 구함.
+                            nextPoint = ChordFunction.GetProgressionPoint(candidate.EChordFunction, nextChordSlot.chord.EChordFunction);
+                            nextImaginaryChord = nextChordSlot.chord;
+                        }
+                        // 이후에 코드가 없으 경우
+                        else
+                        {
+                            int imaginaryPoint = 0;
+                            int maxImaginaryPoint = int.MinValue;
+                            // 세컨더리 도미넌트일 경우
+                            if (candidate.isSecondaryDominant)
+                            {
+                                int resolveRoot = (candidate.Root + 5) % 12;
+                                foreach (Chord nextCandidate in nextChordSlot.candidateChords)
+                                {
+                                    if (nextCandidate.Root % 12 == resolveRoot)
+                                    {
+                                        nextPoint = 5;
+                                        imaginaryPoint = ChordFunction.GetProgressionPoint(EChordFunction.Dominant, EChordFunction.Tonic);
+                                        maxImaginaryPoint = imaginaryPoint;
+                                        nextImaginaryChord = nextCandidate;
+                                        break;
+                                    }
+                                }
+                            }
+                            else
+                            {
+                                // 이후의 코드후보로부터 가장 높은 포인트를 얻은 코드로 구함.
+                                foreach (Chord nextCandidate in nextChordSlot.candidateChords)
+                                {
+                                    imaginaryPoint = ChordFunction.GetProgressionPoint(candidate.EChordFunction, nextCandidate.EChordFunction);
+                                    if (imaginaryPoint > maxImaginaryPoint)
+                                    {
+                                        maxImaginaryPoint = imaginaryPoint;
+                                        nextImaginaryChord = nextCandidate;
+                                    }
+                                    else if (imaginaryPoint == maxImaginaryPoint)
+                                    {
+                                        if (nextImaginaryChord.match < nextCandidate.match)
+                                        {
+                                            maxImaginaryPoint = imaginaryPoint;
+                                            nextImaginaryChord = nextCandidate;
+                                        }
+                                    }
+                                }
+                            }
+                            nextPoint = maxImaginaryPoint;
+                        }
+                        // 이전코드로부터의 진행점수와 다음 코드로의 진행점수를 합산.
+                        int currentPoint = prevPoint + nextPoint;
+                        if (currentPoint > biggestPoint || biggestMatch == null)
+                        {
+                            biggestMatch = candidate;
+                            biggestPoint = currentPoint;
+                            nextBiggestMatch = nextImaginaryChord;
+                        }
+                        else if (currentPoint == biggestPoint)
+                        {
+                            if (biggestMatch.match + nextBiggestMatch.match < candidate.match + nextImaginaryChord.match)
+                            {
+                                biggestMatch = candidate;
+                                biggestPoint = currentPoint;
+                                nextBiggestMatch = nextImaginaryChord;
+                            }
+                        }
+
+                    }
+                }
+                slot.chord = biggestMatch;
             }
         }
 
@@ -261,16 +237,8 @@ namespace Harmonify
                         {
                             int biggestPoint = int.MinValue;
                             Chord biggestMatch = null;
-                            bool hasSecondaryDominant = false;
-                            foreach(Chord candidate in slot.candidateChords)
-                            {
-                                if(candidate.isSecondaryDominant)
-                                {
-                                    hasSecondaryDominant = true;
-                                    break;
-                                }
-                            }
-                            if (hasSecondaryDominant)
+                            Chord nextBiggestMatch = null;
+                            if (HasSecondaryDominant(slot.candidateChords))
                             {
                                 // 각 후보코드당
                                 foreach (Chord candidate in slot.candidateChords)
@@ -332,23 +300,24 @@ namespace Harmonify
                                             }
                                             nextPoint = maxImaginaryPoint;
                                         }
-                                    }
-                                    // 이전코드로부터의 진행점수와 다음 코드로의 진행점수를 합산.
-                                    int currentPoint = nextPoint;
-                                    if (currentPoint > biggestPoint || biggestMatch == null)
-                                    {
-                                        biggestMatch = candidate;
-                                        biggestPoint = currentPoint;
-                                    }
-                                    else if (currentPoint == biggestPoint)
-                                    {
-                                        if (biggestMatch.match < candidate.match)
+                                        // 이전코드로부터의 진행점수와 다음 코드로의 진행점수를 합산.
+                                        int currentPoint = nextPoint;
+                                        if (currentPoint > biggestPoint || biggestMatch == null)
                                         {
                                             biggestMatch = candidate;
                                             biggestPoint = currentPoint;
+                                            nextBiggestMatch = nextImaginaryChord;
+                                        }
+                                        else if (currentPoint == biggestPoint)
+                                        {
+                                            if (biggestMatch.match + nextBiggestMatch.match < candidate.match + nextImaginaryChord.match)
+                                            {
+                                                biggestMatch = candidate;
+                                                biggestPoint = currentPoint;
+                                                nextBiggestMatch = nextImaginaryChord;
+                                            }
                                         }
                                     }
-
                                 }
                                 slot.chord = biggestMatch;
                                 if (slot.chord.isSecondaryDominant)
@@ -382,6 +351,7 @@ namespace Harmonify
                         Measure measure = sections[sectionIndex].measures[measureIndex];
                         for (int slotIndex = 0; slotIndex < measure.chordSlots.Count; slotIndex++)
                         {
+                            
                             measure.chordSlots[slotIndex].candidateChords.AddRange(GetDiatonicCandidateChords(measure.noteWeights));
                             // 논 다이어토닉 코드를 포함하고 있으면
                             if (!KeySignature.IsDiatonic(sections[sectionIndex].measures[measureIndex].notes))
@@ -400,7 +370,13 @@ namespace Harmonify
                             // 하나도 맞는 코드가 없으면
                             if (measure.chordSlots[slotIndex].candidateChords.Count < 1)
                             {
-
+                                // 두개로 쪼갬
+                                ChordSlot next = measure.chordSlots[slotIndex].nextSlot;
+                                measure.chordSlots[slotIndex] = new ChordSlot(measure.firstHalfNoteWeights);
+                                ChordSlot added = new ChordSlot(measure.secondHalfNoteWeights);
+                                measure.chordSlots[slotIndex].nextSlot = added;
+                                added.prevSlot = measure.chordSlots[slotIndex];
+                                added.nextSlot = next;
                             }
                         }
                     }
@@ -414,10 +390,19 @@ namespace Harmonify
             {
                 return chord.match > 700;
             }
+            else if(measure.NoteWeightsSum == 0)
+            {
+                return true;
+            }
             else
             {
                 return chord.match / measure.NoteWeightsSum > 0.7f;
             }
+        }
+
+        private bool ChordWorks(int noteWeightsSum, Chord chord)
+        {
+            return chord.match / noteWeightsSum > 0.7f;
         }
 
         private List<Chord> GetDiatonicCandidateChords(int[] noteWeights)
@@ -494,6 +479,18 @@ namespace Harmonify
                 }
             }
             return candidates;
+        }
+
+        private bool HasSecondaryDominant(List<Chord> chords)
+        {
+            for(int i = 0;i<chords.Count;i++)
+            {
+                if (chords[i].isSecondaryDominant)
+                {
+                    return true;
+                }
+            }
+            return false;
         }
 
     }

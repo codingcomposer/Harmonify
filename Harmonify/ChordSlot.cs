@@ -10,5 +10,11 @@ namespace Harmonify
         public ChordSlot nextSlot;
         public Chord chord;
         public List<Chord> candidateChords = new List<Chord>();
+        public int[] noteWeights;
+
+        public ChordSlot(int[] _noteWeights)
+        {
+            noteWeights = _noteWeights;
+        }
     }
 }

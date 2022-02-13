@@ -41,7 +41,7 @@ namespace Harmonify
             ThirdBeatTick = FirstBeatTick + ((GetLastTick() - FirstBeatTick) / 2);
             SecondBeatTick = FirstBeatTick + ((ThirdBeatTick - FirstBeatTick) / 2);
             // 기본적으로 코드하나는 들어간다.
-            chordSlots.Add(new ChordSlot());
+            chordSlots.Add(new ChordSlot(noteWeights));
         }
 
         public void Link(Measure prev, Measure next)
